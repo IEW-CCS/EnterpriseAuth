@@ -105,6 +105,8 @@ namespace EnterpriseAuth
             if(this._btm != null)
             {
                 this._btm.DisconnectDevice();
+                this._btm = null;
+                GC.Collect();
             }
 
             SaveProfiles();
