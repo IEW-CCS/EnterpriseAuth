@@ -26,6 +26,11 @@ namespace EnterpriseAuth
 
     }
 
+    public class BLEMessageEventArgs : EventArgs
+    {
+        public string bleMessage { get; set; }
+    }
+
     [Serializable]
     public class ServerProfile
     {

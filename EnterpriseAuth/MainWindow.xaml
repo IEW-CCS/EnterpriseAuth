@@ -45,8 +45,10 @@
                 </Button>
 
                 <Button x:Name="btnDeleteProfile" Content="-" Width="40" Height="40" BorderBrush="White" Background="White" FontSize="30" BorderThickness="0,0,0,0" Click="DeleteProfileButton_Click"/>
+                <!--
                 <Button x:Name="btnTest" Content="T" Width="40" Height="40" BorderBrush="White" Background="White" FontSize="30" BorderThickness="0,0,0,0" Click="btnTest_Click" />
-            </StackPanel>
+                -->
+                </StackPanel>
         </StackPanel>
         <ContentControl Content="{Binding SelectedViewModel}" Width="600" Height="560" Margin="20,0,20,0"  />
 

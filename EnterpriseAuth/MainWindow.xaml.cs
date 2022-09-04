@@ -132,53 +132,14 @@ namespace EnterpriseAuth
             stream.Close();
         }
 
-        public async void TestCitrix()
-        {
-            //string strUrl = "https://roaming.innolux.com/nitro/v1/config/login";
-            string strUrl = "https://roaming.innolux.com/logon/LogonPoint";
-            string strJson = @"{""login"": ""username"": ""james.loa"", ""password"": ""!3edc4rfv""}}";
-
-            StringContent requestContent = new StringContent(strJson, Encoding.UTF8, "application/json");
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.BaseAddress = new Uri(strUrl);
-
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                try
-                {
-                    HttpResponseMessage response = await httpClient.PostAsync(strUrl, requestContent);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        HttpContent content = response.Content;
-                        string jsonContent = await content.ReadAsStringAsync();
-                        Console.Write(jsonContent);
-                    }
-                    else
-                    {
-                        //Application.Current.Dispatcher.Invoke(() => {
-                        //    this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
-                        //}, DispatcherPriority.Background);
-                        Console.WriteLine("HTTP Response error");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //Application.Current.Dispatcher.Invoke(() => {
-                    //    this.MessageInfo = "HTTP Post Exception: " + ex.Message;
-                    //}, DispatcherPriority.Background);
-                    Console.WriteLine("HTTP Exception: " + ex.Message);
-                }
-            }
-        }
-
+        /*
         private void btnTest_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Start to scan devices......");
             BlueToothManager btm = new BlueToothManager();
             this._btm = btm;
-            btm.TestScan();
+            btm.ScanAndConnect();
         }
+        */
     }
 }

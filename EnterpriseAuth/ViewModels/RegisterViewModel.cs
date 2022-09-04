@@ -31,6 +31,9 @@ namespace EnterpriseAuth.ViewModels
         public string serviceUUID = "";
         public WebSocket webSocket4Net = null;
 
+        private string credentialContent = "";
+        BlueToothManager btManager = new BlueToothManager();
+
         /*
         public ServerProfile ProfileObject
         {
@@ -38,7 +41,7 @@ namespace EnterpriseAuth.ViewModels
             set { serverProfile = value; }
         }
         */
-        
+
         public string ProfileName
         {
             get { return serverProfile.strProfileName; }
@@ -235,6 +238,10 @@ namespace EnterpriseAuth.ViewModels
                 Console.WriteLine($"Servier Reply Data: {e.Message}！");
 
                 this.DisplayBlueToothStatus();
+                this.btManager.ScanAndConnect();
+                this.btManager.BLEMessageEvent += BLEMessage_Received;
+                this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
+                this.btManager.CredentialContentEvent += CredentialContent_Received;
             }
             else
             {
@@ -242,6 +249,36 @@ namespace EnterpriseAuth.ViewModels
                     this.MessageInfo = "WebSocket Notify Error";
                 }, DispatcherPriority.Background);
             }
+        }
+
+        private void BLEMessage_Received(object sender, EventArgs e)
+        {
+            BLEMessageEventArgs pe = e as BLEMessageEventArgs;
+            Console.WriteLine("BLEMessage_Received: " + pe.bleMessage);
+
+            Application.Current.Dispatcher.Invoke(() => {
+                this.MessageInfo = pe.bleMessage;
+            }, DispatcherPriority.Background);
+        }
+
+        private void BiometricsVerify_Received(object sender, EventArgs e)
+        {
+            BLEMessageEventArgs pe = e as BLEMessageEventArgs;
+            Console.WriteLine("Biometrics Verify " + pe.bleMessage);
+
+            //Application.Current.Dispatcher.Invoke(() => {
+            //    this.MessageInfo = "Biometrics Verify " + pe.bleMessage;
+            //}, DispatcherPriority.Background);
+        }
+
+        private void CredentialContent_Received(object sender, EventArgs e)
+        {
+            BLEMessageEventArgs pe = e as BLEMessageEventArgs;
+            Console.WriteLine("Received Credential Content: " + pe.bleMessage);
+
+            Application.Current.Dispatcher.Invoke(() => {
+                this.MessageInfo = "Receive and Compare Credential Content OK";
+            }, DispatcherPriority.Background);
         }
 
         public void GenerateQRCode()
@@ -258,7 +295,6 @@ namespace EnterpriseAuth.ViewModels
             }, DispatcherPriority.Background);
 
 
-            this.ConnectBlueTooth();
         }
         
         BitmapImage BitmapToImageSource(Bitmap bitmap)
@@ -277,11 +313,5 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        public void ConnectBlueTooth()
-        {
-            BlueToothManager btManager = new BlueToothManager();
-
-            //btManager.ScanDevices();
-        }
     }
 }
