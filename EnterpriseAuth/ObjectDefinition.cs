@@ -43,7 +43,12 @@ namespace EnterpriseAuth
         public string strUserName { get; set; }
         public string strPassword { get; set; }
         public string strMyPrivateKey { get; set; }
-        public string strPublicKey { get; set; }
+        public string strMyPublicKey { get; set; }
+        public string strServerPublicKey { get; set; }
+        public string strHttpServiceURL { get; set; }
+        public string strWSServiceURL { get; set; }
+
+        public string strTokenID { get; set; }
         public string strCredential { get; set; }
         public ServerProfile()
         {
@@ -56,8 +61,27 @@ namespace EnterpriseAuth
             this.strUserName = "";
             this.strPassword = "";
             this.strMyPrivateKey = "";
-            this.strPublicKey = "";
+            this.strMyPublicKey = "";
+            this.strServerPublicKey = "";
+            this.strTokenID = "";
+            this.strHttpServiceURL = "";
+            this.strWSServiceURL = "";
             this.strCredential = "";
         }
     }
+
+    public class QRCodeContent
+    {
+        public string strServerURL { get; set; }
+        public string strTokenID { get; set; }
+        public string strUserName { get; set; }
+
+        public QRCodeContent()
+        {
+            this.strServerURL = "";
+            this.strTokenID = "";
+            this.strUserName = "";
+        }
+    }
+
 }

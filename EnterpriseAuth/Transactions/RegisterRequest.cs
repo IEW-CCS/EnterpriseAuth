@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    public class RegisterRequest
+    public class RegisterRequest_tmp
+
     {
         public string serverURL { get; set; }
         public string userName { get; set; }
@@ -15,7 +16,7 @@ namespace EnterpriseAuth.Transactions
         public string blueToothMac { get; set; }
         public string processStep { get; set; }
 
-        public RegisterRequest()
+        public RegisterRequest_tmp()
         {
             this.serverURL = "";
             this.userName = "";

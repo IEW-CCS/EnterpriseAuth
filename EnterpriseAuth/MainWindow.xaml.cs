@@ -20,6 +20,7 @@ using System.Windows.Shapes;
 using EnterpriseAuth.ViewModels;
 using EnterpriseAuth.Views;
 using EnterpriseAuth.Managers;
+using EnterpriseAuth.Security;
 
 namespace EnterpriseAuth
 {
@@ -28,6 +29,7 @@ namespace EnterpriseAuth
 
         public List<ServerProfile> profileList = new List<ServerProfile>();
         public BlueToothManager _btm;
+        public  static SecurityManager ObjectSecutiry = new SecurityManager();
         public MainWindow()
         {
             InitializeComponent();
@@ -46,6 +48,7 @@ namespace EnterpriseAuth
         public void ProfileAddEventHandler(object sender, EventArgs e)
         {
             ProfileEditEventArgs pe = e as ProfileEditEventArgs;
+            AuthSecurity AuthSecurity = new AuthSecurity();
 
             this.profileList.Add(new ServerProfile()
             {
@@ -56,8 +59,11 @@ namespace EnterpriseAuth
                 strServerPort = pe.portID,
                 strServerConnectionType = pe.connectionType,
                 strUserName = pe.userName,
+                strMyPrivateKey = AuthSecurity.PrivateKey,
+                strMyPublicKey = AuthSecurity.PublicKey
             });
 
+            ObjectSecutiry.SetRSASecurity(pe.userName, pe.profileName, AuthSecurity);
             this.listServerProfile.Items.Refresh();
         }
         private void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
@@ -121,10 +127,40 @@ namespace EnterpriseAuth
             Stream stream = new FileStream(@".\profile.dat", FileMode.Open, FileAccess.Read);
             this.profileList = (List<ServerProfile>)formatter.Deserialize(stream);
 
+            foreach( var profile in profileList)
+            {
+                string username = profile.strUserName;
+                string server = profile.strProfileName;
+                string publicKey = profile.strMyPublicKey;
+                string privateKey = profile.strMyPrivateKey;
+                string ServerPublic = profile.strServerPublicKey;
+
+                if (username != string.Empty  && server != string.Empty && publicKey != string.Empty && privateKey != string.Empty)
+                {
+                    AuthSecurity AuthS = new AuthSecurity(privateKey, publicKey);
+                    AuthS.ClientID = server;
+                    AuthS.ClientPublicKey = ServerPublic;
+                    ObjectSecutiry.SetRSASecurity(username, server, AuthS);
+                }
+            }
+            
         }
 
         private void SaveProfiles()
         {
+
+            foreach (var profile in profileList)
+            {
+                string username = profile.strUserName;
+                string server = profile.strProfileName;
+
+                AuthSecurity AuthS  = ObjectSecutiry.GetRSASecurity(profile.strUserName, profile.strProfileName);
+                profile.strMyPublicKey = AuthS.PublicKey;
+                profile.strMyPrivateKey = AuthS.PrivateKey;
+                profile.strServerPublicKey = AuthS.ClientPublicKey;
+
+            }
+
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream(@".\profile.dat", FileMode.Create, FileAccess.Write);
 
