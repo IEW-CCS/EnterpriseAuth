@@ -3,12 +3,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:gif="http://wpfanimatedgif.codeplex.com"
              xmlns:local="clr-namespace:EnterpriseAuth.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="560" d:DesignWidth="600">
+             d:DesignHeight="560" d:DesignWidth="600" Loaded="UserControl_Loaded">
     <Grid>
-        <Label Content="Authentication" HorizontalAlignment="Center" Margin="0,28,0,0" VerticalAlignment="Top" FontSize="36" FontWeight="Bold"/>
-        <Label x:Name="label" Content="{Binding ProfileObject.strProfileName}" HorizontalAlignment="Center" Margin="0,89,0,0" VerticalAlignment="Top" FontSize="24" FontWeight="Bold"/>
+        <Label Content="Authentication" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="36" FontWeight="Bold"/>
+        <GroupBox Header="{Binding ProfileName}" Margin="22,56,23,354" FontSize="18" FontWeight="Bold" Height="150">
+            <StackPanel Orientation="Horizontal" Height="125" Margin="8,0">
+                <StackPanel Width="520" Height="125">
+                    <StackPanel Height="40" Orientation="Horizontal">
+                        <Label Content="Server IP" FontSize="16" Width="100" Height="30"/>
+                        <Label Content="{Binding ServerIP }" Foreground="#FF0F2BEB" FontWeight="Bold" Background="#FFBBBBBB" FontSize="14" Width="240" Height="30"/>
+                        <Label Content="Port" FontSize="16" Width="70" Height="30" Margin="28,0,0,0"/>
+                        <Label Content="{Binding ServerPort }" Foreground="#FF0F2BEB" FontWeight="Bold" Background="#FFBBBBBB" FontSize="14" Width="80" Height="30"/>
+                    </StackPanel>
+                    <StackPanel Height="40" Orientation="Horizontal">
+                        <Label Content="User Name" Margin="0,3,0,0" FontSize="16" Width="100" Height="30"/>
+                        <Label Content="{Binding UserName}" Foreground="#FF0F2BEB" FontWeight="Bold" Background="#FFBBBBBB" Margin="0,5,0,0" FontSize="14" Width="240" Height="30"/>
+                    </StackPanel>
+                    <StackPanel Height="40" Orientation="Horizontal">
+                        <Label Content="Password" Margin="0,3,0,0" FontSize="16" Width="100" Height="30"/>
+                        <PasswordBox x:Name="pwdBox" Width="240" Margin="0,6,0,0" FontSize="14" Height="30"/>
+                        <Button Content="Connect" Foreground="White" Background="#FF267BCF" Height="30" Click="Button_Click" Margin="100,0,0,7" HorizontalAlignment="Right" Width="80" VerticalAlignment="Bottom" BorderThickness="0"/>
+                    </StackPanel>
+                </StackPanel>
+
+            </StackPanel>
+        </GroupBox>
+
+        <Image Name="imageQRCode" Source="{Binding StateImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="260" Width="560" Margin="0,135,0,0" Visibility="Visible" Stretch="Uniform"></Image>
+
+        <Label Name="labelMessage"  Content="{Binding MessageInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" Margin="0,515,0,0" VerticalAlignment="Top"/>
 
     </Grid>
 </UserControl>

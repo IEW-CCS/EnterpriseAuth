@@ -9,5 +9,10 @@ namespace EnterpriseAuth.ViewModels
 {
     public class WelcomeViewModel : BaseViewModel
     {
+        public WelcomeViewModel()
+        {
+            //Console.WriteLine("WelcomeViewModel test OnProfileUpdated event");
+            //OnProfileUpdated();
+        }
     }
 }

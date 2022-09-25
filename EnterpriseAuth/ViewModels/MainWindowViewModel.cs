@@ -11,6 +11,8 @@ namespace EnterpriseAuth.ViewModels
 {
     public class MainWindowViewModel : BaseViewModel
     {
+        //public event EventHandler ProfileUpdateEventHandler;
+
         private BaseViewModel _selectedViewModel;
         public BaseViewModel SelectedViewModel
         {
@@ -28,8 +30,8 @@ namespace EnterpriseAuth.ViewModels
         {
             this.UpdateViewCommand = new UpdateViewCommand(this);
             this.UpdateViewCommand.Execute(new ServerProfile());
-
         }
+
     }
 
 }

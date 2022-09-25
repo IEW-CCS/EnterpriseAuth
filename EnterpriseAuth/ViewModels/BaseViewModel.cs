@@ -9,7 +9,12 @@ namespace EnterpriseAuth.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {
+        //public Action<object, EventArgs> ProfileUpdateEventHandler { get; internal set; }
+
+        public event EventHandler ProfileUpdateEventHandler;
+
         public event PropertyChangedEventHandler PropertyChanged;
+
         protected void OnPropertyChanged(string propertyName)
         {
 
@@ -17,6 +22,15 @@ namespace EnterpriseAuth.ViewModels
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        protected void OnProfileUpdated()
+        {
+            var handler = ProfileUpdateEventHandler;
+            if (handler != null)
+            {
+                handler(this, new EventArgs());
             }
         }
     }

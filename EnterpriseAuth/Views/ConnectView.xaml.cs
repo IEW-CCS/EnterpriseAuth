@@ -12,6 +12,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Drawing;
+using System.Threading;
+using EnterpriseAuth.Transactions;
+using EnterpriseAuth.ViewModels;
+
 
 namespace EnterpriseAuth.Views
 {
@@ -20,9 +25,25 @@ namespace EnterpriseAuth.Views
     /// </summary>
     public partial class ConnectView : UserControl
     {
+        public ConnectViewModel connectViewModel;
+
         public ConnectView()
         {
             InitializeComponent();
         }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.connectViewModel = DataContext as ConnectViewModel;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            //this.registerViewModel.RegisterServer();
+            string passwd = this.pwdBox.Password;
+            this.connectViewModel.UserPassword = passwd;
+            this.connectViewModel.TestAuthentication();
+        }
+
     }
 }

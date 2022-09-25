@@ -26,7 +26,7 @@ namespace EnterpriseAuth
 {
     public partial class MainWindow : Window
     {
-
+        public int iSelectedIndex = -1;
         public List<ServerProfile> profileList = new List<ServerProfile>();
         public BlueToothManager _btm;
         public  static SecurityManager ObjectSecutiry = new SecurityManager();
@@ -36,6 +36,17 @@ namespace EnterpriseAuth
 
             this.ReadProfiles();
             this.listServerProfile.ItemsSource = this.profileList;
+
+            MainWindowViewModel mainViewModel = DataContext as MainWindowViewModel;
+            if(mainViewModel.SelectedViewModel == null)
+            {
+                Console.WriteLine("mainViewModel.SelectedViewModel is Null");
+            }
+            else
+            {
+                Console.WriteLine("mainViewModel.SelectedViewModel is Non-Null");
+                mainViewModel.SelectedViewModel.ProfileUpdateEventHandler += ProfileUpdateEvent;
+            }
         }
 
         private void AddProfileButton_Click(object sender, RoutedEventArgs e)
@@ -66,6 +77,24 @@ namespace EnterpriseAuth
             ObjectSecutiry.SetRSASecurity(pe.userName, pe.profileName, AuthSecurity);
             this.listServerProfile.Items.Refresh();
         }
+
+        public void ProfileUpdateEvent(object sender, EventArgs e)
+        {
+            Console.WriteLine("MainWindow.xaml receives ProfileUpdateEventHandler");
+            SaveProfiles();
+            this.listServerProfile.Items.Refresh();
+
+            
+            if (this.iSelectedIndex >= 0)
+            {
+                //SaveProfiles();
+                this.listServerProfile.SelectedIndex = this.iSelectedIndex;
+                MainWindowViewModel mainViewModel = DataContext as MainWindowViewModel;
+                mainViewModel.UpdateViewCommand.Execute(this.profileList[this.listServerProfile.SelectedIndex]);
+            }
+            
+        }
+
         private void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
         {
             //MessageBox.Show("Delete Server Profile", "Message");
@@ -84,6 +113,8 @@ namespace EnterpriseAuth
 
         private void ServerProfileListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            this.iSelectedIndex = this.listServerProfile.SelectedIndex;
+
             MainWindowViewModel mainViewModel = DataContext as MainWindowViewModel;
 
             if(this.listServerProfile.SelectedIndex < 0)
@@ -95,10 +126,12 @@ namespace EnterpriseAuth
             if (this.profileList[this.listServerProfile.SelectedIndex].strProfileState == GlobalVaraible.PROFILE_STATE_NEW)
             {
                 mainViewModel.UpdateViewCommand.Execute(this.profileList[this.listServerProfile.SelectedIndex]);
+                mainViewModel.SelectedViewModel.ProfileUpdateEventHandler += ProfileUpdateEvent;
             }
             else if (this.profileList[this.listServerProfile.SelectedIndex].strProfileState == GlobalVaraible.PROFILE_STATE_REGISTER)
             {
                 mainViewModel.UpdateViewCommand.Execute(this.profileList[this.listServerProfile.SelectedIndex]);
+                mainViewModel.SelectedViewModel.ProfileUpdateEventHandler += ProfileUpdateEvent;
             }
             else
             {

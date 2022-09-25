@@ -25,9 +25,12 @@ namespace EnterpriseAuth.ViewModels
 
     public class RegisterViewModel : BaseViewModel
     {
+        //public event EventHandler ProfileUpdateEventHandler;
+
         private ServerProfile serverProfile = new ServerProfile();
         private string messageInfo = "";
         private BitmapImage stateImage = new BitmapImage();
+
         public string clientID = "";
         public string serviceUUID = "";
         public WebSocket webSocket4Net = null;
@@ -87,6 +90,13 @@ namespace EnterpriseAuth.ViewModels
             this.serverProfile = sProfile;
         }
 
+        public void TestRegisterComplete()
+        {
+            this.MessageInfo = "Test Register Complete and Change to ConnectView";
+            this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
+            OnProfileUpdated();
+        }
+
         public async void RegisterServer(/*RegisterReplyDelegate del*/)
         {
             this.DisplayConnectingStatus();
@@ -130,6 +140,7 @@ namespace EnterpriseAuth.ViewModels
 
                 try
                 {
+                    //this.serverProfile.strProfileProcessStep = ProcessStep
                     HttpResponseMessage response =await httpClient.PostAsync(ServerURL, requestContent);
                     //response.EnsureSuccessStatusCode();
                     if (response.IsSuccessStatusCode)
@@ -390,6 +401,9 @@ namespace EnterpriseAuth.ViewModels
             Application.Current.Dispatcher.Invoke(() => {
                 this.MessageInfo = "Receive and Compare Credential Content OK";
             }, DispatcherPriority.Background);
+
+            this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
+
         }
 
         public void GenerateQRCode()

@@ -1,5 +1,4 @@
-﻿using EnterpriseAuth.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +15,7 @@ using System.Windows.Shapes;
 using System.Drawing;
 using System.Threading;
 using EnterpriseAuth.Transactions;
+using EnterpriseAuth.ViewModels;
 
 namespace EnterpriseAuth.Views
 {
@@ -35,8 +35,8 @@ namespace EnterpriseAuth.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.registerViewModel.RegisterServer();
-            //this.registerViewModel.WebSocketTest();
+            //this.registerViewModel.RegisterServer();
+            this.registerViewModel.TestRegisterComplete();
         }
 
     }

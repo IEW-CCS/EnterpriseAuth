@@ -27,7 +27,6 @@ namespace EnterpriseAuth.Commands
 
         public void Execute(object parameter)
         {
-            //MessageBox.Show("Parameter object = " + parameter.ToString(), "Message");
             if (parameter == null)
             {
                 return;

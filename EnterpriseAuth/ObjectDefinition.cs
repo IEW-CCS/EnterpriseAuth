@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using EnterpriseAuth.Transactions;
 
 namespace EnterpriseAuth
 {
@@ -37,6 +38,7 @@ namespace EnterpriseAuth
         public string strProfileName { get; set; }
         public string strProfileImage { get; set; }
         public string strProfileState { get; set; }
+        //public string strProfileProcessStep { get; set; }
         public string strServerURL { get; set; }
         public string strServerPort { get; set; }
         public string strServerConnectionType { get; set; }
@@ -55,6 +57,7 @@ namespace EnterpriseAuth
             this.strProfileName = "";
             this.strProfileImage = "";
             this.strProfileState = "";
+            //this.strProfileProcessStep = "";
             this.strServerURL = "";
             this.strServerPort = "";
             this.strServerConnectionType = "";
