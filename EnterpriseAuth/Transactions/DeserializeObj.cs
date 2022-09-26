@@ -63,6 +63,36 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
+
+        public static VCONREQ _VCONREQ(string DataContent)
+        {
+            VCONREQ obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<VCONREQ>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+        public static VCONPLY _VCONPLY(string DataContent)
+        {
+            VCONPLY obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<VCONPLY>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+
         public static APREGCMP _APREGCMP(string DataContent)
         {
             APREGCMP obj = null;

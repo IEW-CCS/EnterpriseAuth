@@ -18,6 +18,7 @@ namespace EnterpriseAuth
         public const string PROFILE_STATE_REGISTER = "Register";
 
         public const string REGISTER_LOGIN = "api/login/regLogin";
+        public const string CONNECTION_REQUEST = "api/login/connectionRequest";
 
         public const string CONNECTION_TYPE_CITRIX = "Citrixx";
         public const string CONNECTION_TYPE_VPN = "VPN";

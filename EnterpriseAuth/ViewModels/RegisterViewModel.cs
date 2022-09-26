@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Newtonsoft.Json;
-using EnterpriseAuth.Transactions;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Security.Policy;
@@ -17,6 +16,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using WebSocket4Net;
+using EnterpriseAuth.Transactions;
 using EnterpriseAuth.Managers;
 using EnterpriseAuth.Security;
 
@@ -286,7 +286,7 @@ namespace EnterpriseAuth.ViewModels
         {
 
             WSTrx wstrx = JsonConvert.DeserializeObject<WSTrx>(e.Message);
-            if (wstrx.ProcStep == EnumList.ProcessStep.WSKT_CON.ToString())
+            if (wstrx.ProcStep == EnumList.ProcessStep.WCON_PLY.ToString())
             {
                 if (wstrx.ReturnCode == 0)
                 {
@@ -306,7 +306,7 @@ namespace EnterpriseAuth.ViewModels
                     }, DispatcherPriority.Background);
                 }
             }
-            else if (wstrx.ProcStep == EnumList.ProcessStep.UUID_ANN.ToString())
+            else if (wstrx.ProcStep == EnumList.ProcessStep.WUID_ANN.ToString())
             {
                 if (wstrx.ReturnCode == 0)
                 {
@@ -403,7 +403,7 @@ namespace EnterpriseAuth.ViewModels
             }, DispatcherPriority.Background);
 
             this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
-
+            OnProfileUpdated();
         }
 
         public void GenerateQRCode()
@@ -442,8 +442,6 @@ namespace EnterpriseAuth.ViewModels
                 return bitmapimage;
             }
         }
-
-
 
         private bool Handle_APREGPLY(string DataContent, out APREGPLY apregply, out string ReturnMsg)
         {

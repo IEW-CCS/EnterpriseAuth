@@ -91,6 +91,8 @@
     <Compile Include="Transactions\RegisterReply.cs" />
     <Compile Include="Transactions\RegisterRequest.cs" />
     <Compile Include="Transactions\ClientNotify.cs" />
+    <Compile Include="Transactions\VCONPLY.cs" />
+    <Compile Include="Transactions\VCONREQ.cs" />
     <Compile Include="Transactions\WSAuthError.cs" />
     <Compile Include="Transactions\WSTrx.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
