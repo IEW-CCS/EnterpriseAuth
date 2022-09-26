@@ -64,6 +64,21 @@ namespace EnterpriseAuth.Transactions
             return obj;
         }
 
+        public static AREGFIN _AREGFIN(string DataContent)
+        {
+            AREGFIN obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<AREGFIN>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+
         public static VCONREQ _VCONREQ(string DataContent)
         {
             VCONREQ obj = null;
@@ -84,6 +99,34 @@ namespace EnterpriseAuth.Transactions
             try
             {
                 obj = JsonConvert.DeserializeObject<VCONPLY>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+        public static AHPWREQ _AHPWREQ(string DataContent)
+        {
+            AHPWREQ obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<AHPWREQ>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+        public static AHPWPLY _AHPWPLY(string DataContent)
+        {
+            AHPWPLY obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<AHPWPLY>(DataContent);
             }
             catch
             {

@@ -71,12 +71,16 @@
     <Compile Include="Security\AuthRSA.cs" />
     <Compile Include="Security\AuthSecurity.cs" />
     <Compile Include="Security\SecurityManager.cs" />
+    <Compile Include="Transactions\AHPWPLY.cs" />
+    <Compile Include="Transactions\AHPWREQ.cs" />
     <Compile Include="Transactions\APREGCMP.cs" />
     <Compile Include="Transactions\APREGPLY.cs" />
     <Compile Include="Transactions\APREGREQ.cs" />
     <Compile Include="Transactions\APVRYCMP.cs" />
     <Compile Include="Transactions\APVRYPLY.cs" />
     <Compile Include="Transactions\APVRYREQ.cs" />
+    <Compile Include="Transactions\AREGCMP.cs" />
+    <Compile Include="Transactions\AREGFIN.cs" />
     <Compile Include="Transactions\CCREDPLY.cs" />
     <Compile Include="Transactions\CCREDREQ.cs" />
     <Compile Include="Transactions\ClientVerifyReply.cs" />

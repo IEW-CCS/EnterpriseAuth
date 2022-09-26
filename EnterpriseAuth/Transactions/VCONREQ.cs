@@ -8,11 +8,11 @@ namespace EnterpriseAuth.Transactions
 {
     class VCONREQ
     {
-        public string DeviceCodeHash { get; set; }
+        public string DeviceCode { get; set; }
 
         public VCONREQ()
         {
-            DeviceCodeHash = "";
+            DeviceCode = "";
         }
     }
 }

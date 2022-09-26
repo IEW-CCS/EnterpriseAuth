@@ -49,9 +49,11 @@ namespace EnterpriseAuth
         public string strServerPublicKey { get; set; }
         public string strHttpServiceURL { get; set; }
         public string strWSServiceURL { get; set; }
-
         public string strTokenID { get; set; }
         public string strCredential { get; set; }
+        public string strAuthenticationTokenID { get; set; }
+        public string strAuthenticationURL { get; set; }
+
         public ServerProfile()
         {
             this.strProfileName = "";
@@ -70,6 +72,8 @@ namespace EnterpriseAuth
             this.strHttpServiceURL = "";
             this.strWSServiceURL = "";
             this.strCredential = "";
+            this.strAuthenticationTokenID = "";
+            this.strAuthenticationURL = "";
         }
     }
 

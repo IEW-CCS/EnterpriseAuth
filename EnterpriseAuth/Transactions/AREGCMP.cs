@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class APVRYPLY
+    class AREGCMP
     {
-        public string SerialNumber { get; set; }
-
-        public APVRYPLY()
+        public string Result { get; set; }
+        public AREGCMP()
         {
-            SerialNumber = string.Empty;
+            this.Result = "";
         }
     }
+
 }

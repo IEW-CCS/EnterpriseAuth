@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class APVRYPLY
+    class AHPWPLY
     {
-        public string SerialNumber { get; set; }
+        public string PasswordData { get; set; }
 
-        public APVRYPLY()
+        public AHPWPLY()
         {
-            SerialNumber = string.Empty;
+            this.PasswordData = "";
         }
     }
 }

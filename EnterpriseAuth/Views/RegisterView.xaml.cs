@@ -35,8 +35,11 @@ namespace EnterpriseAuth.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //this.registerViewModel.RegisterServer();
-            this.registerViewModel.TestRegisterComplete();
+            string passwd = this.pwdBox.Password;
+            this.registerViewModel.UserPassword = passwd;
+
+            this.registerViewModel.RegisterServer();
+            //this.registerViewModel.TestRegisterComplete();
         }
 
     }

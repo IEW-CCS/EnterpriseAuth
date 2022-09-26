@@ -42,7 +42,7 @@ namespace EnterpriseAuth.Views
             //this.registerViewModel.RegisterServer();
             string passwd = this.pwdBox.Password;
             this.connectViewModel.UserPassword = passwd;
-            this.connectViewModel.TestAuthentication();
+            this.connectViewModel.StartAuthentication();
         }
 
     }
