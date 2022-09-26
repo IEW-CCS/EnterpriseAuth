@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class AHPWPLY
+    class AACONPLY
     {
-        public string PasswordData { get; set; }
+        public string PassCode { get; set; }
 
-        public AHPWPLY()
+        public AACONPLY()
         {
-            this.PasswordData = "";
+            PassCode = "";
         }
+
     }
 }

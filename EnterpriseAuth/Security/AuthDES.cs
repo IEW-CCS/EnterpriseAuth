@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Security
 {
-    class AuthDES
+    public class AuthDES
     {
         private DESCryptoServiceProvider des = null;
         public AuthDES()

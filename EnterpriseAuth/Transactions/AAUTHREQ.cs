@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class APVRYREQ
+    class AAUTHREQ
     {
         public string PassWord { get; set; }
         public string PassCode { get; set; }
 
-        public APVRYREQ()
+        public AAUTHREQ()
         {
             PassWord = string.Empty;
             PassCode = string.Empty;

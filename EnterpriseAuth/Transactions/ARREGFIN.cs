@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class AREGFIN
+    class ARREGFIN
     {
         public string AuthenticationToken { get; set; }
         public string AuthenticationURL { get; set; }
 
-        public AREGFIN()
+        public ARREGFIN()
         {
             this.AuthenticationToken = "";
             this.AuthenticationURL = "";

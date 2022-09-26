@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Security
 {
-    class AuthRSA
+    public class AuthRSA
     {
         public string publicKey { get; } = string.Empty;
         public string privateKey { get; } = string.Empty;

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class AHPWREQ
+    class AAPSWREQ
     {
         public string BiometricsResult { get; set; }
         public string SerialNumber { get; set; }
         public string CredentialSign { get; set; }
 
-        public AHPWREQ()
+        public AAPSWREQ()
         {
             this.BiometricsResult = "";
             this.SerialNumber = "";

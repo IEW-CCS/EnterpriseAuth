@@ -10,25 +10,50 @@ namespace EnterpriseAuth.Transactions
     {
        public  enum ProcessStep
         {
-            AREG_REQ,        //App Regist Request
-            AREG_PLY,        //App Regist Reply
-            UUID_RPT,        // UUID Report 
-            UUID_ACK,        // UUID Report ACK
-            CRED_REQ,        //credential Request
-            CRED_PLY,        //credential Reply
-            AREG_CMP,        //App Regist Complete
-            AREG_FIN,        //App Regist Finished
+            /********* Naming Rule Modify *********
+               104-1    第一碼 Ａ   104-2 第一碼 C
+               //--  Register 第二碼 R  --
+                ARREGREQ      App Reg REQ
+                ARREGPLY      App Reg PLY
+                ARWSCREQ      App Reg WS Connect REQ
+                ARWSCPLY      App Reg WS Connect PLY
+                CRUIDRPT      Mobile Reg UID Report
+                CRUIDPLY      Mobile Reg UID Reply
+                CRCRLREQ      Mobile Reg Credential Request
+                CRCRLPLY      Mobile Reg Credential Reply
+                ARWSCANN      App Reg WS Credential Announce
+                ARREGCMP      App Reg Complete 
+                ARREGFIN      App Reg Finished
 
-            VCON_REQ,      // Verify Connect Request
-            VCON_PLY,        // Verift Connect Reply
-            AVRY_REQ,       // App Vryope Request
-            AVRY_PLY,         // App Vryope Reply
-            AHPW_REQ,      // App Hash Password Request
-            AHPW_PLY,        // App Hash Password Reply
+               //-- Authentication 第二碼 Ａ  --
+                AACONREQ      App Auth connect REQ
+                AACONPLY      App Auth connect PLY
+                AAUTHREQ      App Auth REQ
+                AAUTHPLY      App Auth PLY
+                AAPSWREQ      App PassWord REQ
+                AAPSWPLY      App PassWord PLY
+    
+             ******** Naming Rule Modify **********/
 
-            WCON_REQ,      // WebSocket Connect Request
-            WCON_PLY,        // WebSocket Connect Request
-            WUID_ANN,        // WebSocket UUID Announce 
+            ARREGREQ,
+            ARREGPLY,
+            ARWSCREQ,
+            ARWSCPLY,
+            CRUIDRPT,
+            CRUIDPLY,
+            CRCRLREQ,
+            CRCRLPLY,
+            ARWSCANN,
+            ARREGCMP,
+            ARREGFIN,
+
+            AACONREQ,
+            AACONPLY,
+            AAUTHREQ,
+            AAUTHPLY,
+            AAPSWREQ,
+            AAPSWPLY,
+
             STEP_ERR
         }
 

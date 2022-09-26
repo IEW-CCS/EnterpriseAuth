@@ -191,7 +191,7 @@ namespace EnterpriseAuth
                 profile.strMyPublicKey = AuthS.PublicKey;
                 profile.strMyPrivateKey = AuthS.PrivateKey;
                 profile.strServerPublicKey = AuthS.ClientPublicKey;
-
+                
             }
 
             IFormatter formatter = new BinaryFormatter();

@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class VCONPLY
+    class AACONREQ
     {
-        public string PassCode { get; set; }
+        public string DeviceCode { get; set; }
 
-        public VCONPLY()
+        public AACONREQ()
         {
-            PassCode = "";
+            DeviceCode = "";
         }
-
     }
 }

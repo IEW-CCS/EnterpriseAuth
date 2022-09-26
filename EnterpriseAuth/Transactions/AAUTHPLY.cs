@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class VCONREQ
+    class AAUTHPLY
     {
-        public string DeviceCode { get; set; }
+        public string SerialNumber { get; set; }
 
-        public VCONREQ()
+        public AAUTHPLY()
         {
-            DeviceCode = "";
+            SerialNumber = string.Empty;
         }
     }
 }

@@ -19,6 +19,7 @@ using System.Windows.Threading;
 using WebSocket4Net;
 using EnterpriseAuth.Managers;
 using EnterpriseAuth.Security;
+using System.Net.NetworkInformation;
 
 namespace EnterpriseAuth.ViewModels
 {
@@ -92,239 +93,317 @@ namespace EnterpriseAuth.ViewModels
         {
             this.DisplayConnectingStatus();
 
-            VCONREQ vconRequest = new VCONREQ();
-            string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" +serverProfile.strAuthenticationURL;
-            vconRequest.DeviceCode = "00-1C-42-5E-F1-72";
+            AACONREQ AuthConnectRequest = new AACONREQ();
+            string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" + serverProfile.strAuthenticationURL;
+            AuthConnectRequest.DeviceCode = GetMacAddress();
+            string AuthConnectRequestJson = JsonConvert.SerializeObject(AuthConnectRequest);
 
-            string registerRequestJson = JsonConvert.SerializeObject(vconRequest);
-            AuthBaseDES BaseDES = new AuthBaseDES();
 
-            string registerRequestDES = BaseDES.EncryptDES(registerRequestJson);
+            //------ 20220916 Not Base DES use AuthDES 加密方法
+            AuthDES DES = new AuthDES();
+            string AuthConnectRequestDES = DES.EncryptDES(AuthConnectRequestJson);
 
-            HttpTrx HttpSend = new HttpTrx();
-            HttpSend.username = serverProfile.strUserName;
-            HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-            HttpSend.procstep = EnumList.ProcessStep.VCON_REQ.ToString();
-            HttpSend.returncode = 0;
-            HttpSend.returnmsg = string.Empty;
-            HttpSend.datacontent = registerRequestDES;
-            HttpSend.ecs = string.Empty;
-            HttpSend.ecssign = string.Empty;
+            ECS HECS = new ECS();
+            HECS.Algo = "DES";
+            HECS.Key = DES.GetKey();
+            HECS.IV = DES.GetIV();
 
-            var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
-            StringContent requestContent = null;
-            requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+            string ECSEncryptRetMsg = string.Empty;
+            string HECSJsonStr = JsonConvert.SerializeObject(HECS);
 
-            using (var httpClient = new HttpClient())
+            string rtnMsg = string.Empty;
+            string SignStr = string.Empty;
+            string ECSEncryptStr = string.Empty;
+
+            if (MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).Encrypt_Sign(HECSJsonStr, out ECSEncryptStr, out SignStr, out rtnMsg) != 0)
             {
-                httpClient.BaseAddress = new Uri(ServerURL);
 
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                // Show Error Message 
 
-                try
+            }
+            else
+            {
+                HttpTrx HttpSend = new HttpTrx();
+                HttpSend.username = serverProfile.strUserName;
+                HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
+                HttpSend.procstep = EnumList.ProcessStep.AACONREQ.ToString();
+                HttpSend.returncode = 0;
+                HttpSend.returnmsg = string.Empty;
+                HttpSend.datacontent = AuthConnectRequestDES;
+                HttpSend.ecs = ECSEncryptStr;
+                HttpSend.ecssign = SignStr;
+
+                var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
+                StringContent requestContent = null;
+                requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+
+                using (var httpClient = new HttpClient())
                 {
-                    //this.serverProfile.strProfileProcessStep = ProcessStep
-                    HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
-                    //response.EnsureSuccessStatusCode();
-                    if (response.IsSuccessStatusCode)
+                    httpClient.BaseAddress = new Uri(ServerURL);
+
+                    httpClient.DefaultRequestHeaders.Accept.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+
+                    try
                     {
-                        HttpContent content = response.Content;
-                        //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
-                        string jsonContent = await content.ReadAsStringAsync();
-
-                        VCONPLY vconply = null;
-                        string returnMsg = string.Empty;
-
-                        if (Handle_VCONPLY(jsonContent, out vconply, out returnMsg) == false)
+                        //this.serverProfile.strProfileProcessStep = ProcessStep
+                        HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
+                        //response.EnsureSuccessStatusCode();
+                        if (response.IsSuccessStatusCode)
                         {
-                            Application.Current.Dispatcher.Invoke(() => {
-                                this.MessageInfo = "Handle VCONPLY  Error: " + returnMsg;
-                            }, DispatcherPriority.Background);
+                            HttpContent content = response.Content;
+                            //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
+                            string jsonContent = await content.ReadAsStringAsync();
+
+                            AACONPLY vconply = null;
+                            string returnMsg = string.Empty;
+
+                            if (Handle_AACONPLY(jsonContent, out vconply, out returnMsg) == false)
+                            {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Handle VCONPLY  Error: " + returnMsg;
+                                }, DispatcherPriority.Background);
+                            }
+                            else
+                            {
+                                //Connection reply successful
+                                this.passCode = vconply.PassCode;
+                                this.VerifyUser();
+                            }
                         }
                         else
                         {
-                            //Connection reply successful
-                            this.passCode = vconply.PassCode;
-                            this.VerifyUser();
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                            }, DispatcherPriority.Background);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Application.Current.Dispatcher.Invoke(() => {
-                            this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        this.MessageInfo = "HTTP Post Exception: " + ex.Message;
-                    }, DispatcherPriority.Background);
-                }
-
             }
         }
 
         public async void VerifyUser()
         {
-            APVRYREQ verifyRequest = new APVRYREQ();
+            AAUTHREQ verifyRequest = new AAUTHREQ();
             string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" + serverProfile.strAuthenticationURL;
             verifyRequest.PassWord = this.userPassword;
             verifyRequest.PassCode = this.passCode;
 
             string verifyRequestJson = JsonConvert.SerializeObject(verifyRequest);
-            AuthBaseDES BaseDES = new AuthBaseDES();
 
-            string verifyRequestDES = BaseDES.EncryptDES(verifyRequestJson);
 
-            HttpTrx HttpSend = new HttpTrx();
-            HttpSend.username = serverProfile.strUserName;
-            HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-            HttpSend.procstep = EnumList.ProcessStep.VCON_REQ.ToString();
-            HttpSend.returncode = 0;
-            HttpSend.returnmsg = string.Empty;
-            HttpSend.datacontent = verifyRequestDES;
-            HttpSend.ecs = string.Empty;
-            HttpSend.ecssign = string.Empty;
+            //------ 20220916 Not Base DES use AuthDES 加密方法
+            AuthDES DES = new AuthDES();
+            string verifyRequestDES = DES.EncryptDES(verifyRequestJson);
 
-            var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
-            StringContent requestContent = null;
-            requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+            ECS HECS = new ECS();
+            HECS.Algo = "DES";
+            HECS.Key = DES.GetKey();
+            HECS.IV = DES.GetIV();
 
-            using (var httpClient = new HttpClient())
+            string ECSEncryptRetMsg = string.Empty;
+            string HECSJsonStr = JsonConvert.SerializeObject(HECS);
+
+            string rtnMsg = string.Empty;
+            string SignStr = string.Empty;
+            string ECSEncryptStr = string.Empty;
+
+            if (MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).Encrypt_Sign(HECSJsonStr, out ECSEncryptStr, out SignStr, out rtnMsg) != 0)
             {
-                httpClient.BaseAddress = new Uri(ServerURL);
 
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                // Show Error Message 
 
-                try
+            }
+            else
+            {
+
+                HttpTrx HttpSend = new HttpTrx();
+                HttpSend.username = serverProfile.strUserName;
+                HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
+                HttpSend.procstep = EnumList.ProcessStep.AACONREQ.ToString();
+                HttpSend.returncode = 0;
+                HttpSend.returnmsg = string.Empty;
+                HttpSend.datacontent = verifyRequestDES;
+                HttpSend.ecs = ECSEncryptStr;
+                HttpSend.ecssign = SignStr;
+
+                var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
+                StringContent requestContent = null;
+                requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+
+                using (var httpClient = new HttpClient())
                 {
-                    //this.serverProfile.strProfileProcessStep = ProcessStep
-                    HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
-                    //response.EnsureSuccessStatusCode();
-                    if (response.IsSuccessStatusCode)
+                    httpClient.BaseAddress = new Uri(ServerURL);
+
+                    httpClient.DefaultRequestHeaders.Accept.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+
+                    try
                     {
-                        HttpContent content = response.Content;
-                        //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
-                        string jsonContent = await content.ReadAsStringAsync();
-
-                        APVRYPLY apvryply = null;
-                        string returnMsg = string.Empty;
-
-                        if (Handle_APVRYPLY(jsonContent, out apvryply, out returnMsg) == false)
+                        //this.serverProfile.strProfileProcessStep = ProcessStep
+                        HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
+                        //response.EnsureSuccessStatusCode();
+                        if (response.IsSuccessStatusCode)
                         {
-                            Application.Current.Dispatcher.Invoke(() => {
-                                this.MessageInfo = "Handle APVRYPLY  Error: " + returnMsg;
-                            }, DispatcherPriority.Background);
+                            HttpContent content = response.Content;
+                            //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
+                            string jsonContent = await content.ReadAsStringAsync();
+
+                            AAUTHPLY apvryply = null;
+                            string returnMsg = string.Empty;
+
+                            if (Handle_APVRYPLY(jsonContent, out apvryply, out returnMsg) == false)
+                            {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Handle APVRYPLY  Error: " + returnMsg;
+                                }, DispatcherPriority.Background);
+                            }
+                            else
+                            {
+                                //Connection reply successful
+                                this.serialNumber = apvryply.SerialNumber;
+
+                                //Start to connect BLE device and process Authentication
+                                StartBLEAuthentication();
+                            }
                         }
                         else
                         {
-                            //Connection reply successful
-                            this.serialNumber = apvryply.SerialNumber;
-
-                            //Start to connect BLE device and process Authentication
-                            StartBLEAuthentication();
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                            }, DispatcherPriority.Background);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Application.Current.Dispatcher.Invoke(() => {
-                            this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        this.MessageInfo = "HTTP Post Exception: " + ex.Message;
-                    }, DispatcherPriority.Background);
-                }
 
+                }
             }
         }
 
         public async void HashPasswordRequest()
         {
-            AHPWREQ pwdRequest = new AHPWREQ();
+            AAPSWREQ pwdRequest = new AAPSWREQ();
             string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" + serverProfile.strAuthenticationURL;
             pwdRequest.BiometricsResult = "OK";
             pwdRequest.SerialNumber = this.serialNumber;
             pwdRequest.CredentialSign = this.credentialSign;
 
             string pwdRequestJson = JsonConvert.SerializeObject(pwdRequest);
-            AuthBaseDES BaseDES = new AuthBaseDES();
+            //  AuthBaseDES BaseDES = new AuthBaseDES();
+            //  string pwdRequestDES = BaseDES.EncryptDES(pwdRequestJson);
 
-            string pwdRequestDES = BaseDES.EncryptDES(pwdRequestJson);
+            //------ 20220916 Not Base DES use AuthDES 加密方法
+            AuthDES DES = new AuthDES();
+            string pwdRequestDES = DES.EncryptDES(pwdRequestJson);
 
-            HttpTrx HttpSend = new HttpTrx();
-            HttpSend.username = serverProfile.strUserName;
-            HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-            HttpSend.procstep = EnumList.ProcessStep.AHPW_REQ.ToString();
-            HttpSend.returncode = 0;
-            HttpSend.returnmsg = string.Empty;
-            HttpSend.datacontent = pwdRequestDES;
-            HttpSend.ecs = string.Empty;
-            HttpSend.ecssign = string.Empty;
+            ECS HECS = new ECS();
+            HECS.Algo = "DES";
+            HECS.Key = DES.GetKey();
+            HECS.IV = DES.GetIV();
 
-            var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
-            StringContent requestContent = null;
-            requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+            string ECSEncryptRetMsg = string.Empty;
+            string HECSJsonStr = JsonConvert.SerializeObject(HECS);
 
-            using (var httpClient = new HttpClient())
+            string rtnMsg = string.Empty;
+            string SignStr = string.Empty;
+            string ECSEncryptStr = string.Empty;
+
+            if (MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).Encrypt_Sign(HECSJsonStr, out ECSEncryptStr, out SignStr, out rtnMsg) != 0)
             {
-                httpClient.BaseAddress = new Uri(ServerURL);
 
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                // Show Error Message 
 
-                try
+            }
+            else
+            {
+
+                HttpTrx HttpSend = new HttpTrx();
+                HttpSend.username = serverProfile.strUserName;
+                HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
+                HttpSend.procstep = EnumList.ProcessStep.AAPSWREQ.ToString();
+                HttpSend.returncode = 0;
+                HttpSend.returnmsg = string.Empty;
+                HttpSend.datacontent = pwdRequestDES;
+                HttpSend.ecs = ECSEncryptStr;
+                HttpSend.ecssign = SignStr;
+
+                var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
+                StringContent requestContent = null;
+                requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+
+                using (var httpClient = new HttpClient())
                 {
-                    //this.serverProfile.strProfileProcessStep = ProcessStep
-                    HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
-                    //response.EnsureSuccessStatusCode();
-                    if (response.IsSuccessStatusCode)
+                    httpClient.BaseAddress = new Uri(ServerURL);
+
+                    httpClient.DefaultRequestHeaders.Accept.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+
+                    try
                     {
-                        HttpContent content = response.Content;
-                        //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
-                        string jsonContent = await content.ReadAsStringAsync();
-
-                        AHPWPLY ahpwply = null;
-                        string returnMsg = string.Empty;
-
-                        if (Handle_AHPWPLY(jsonContent, out ahpwply, out returnMsg) == false)
+                        //this.serverProfile.strProfileProcessStep = ProcessStep
+                        HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
+                        //response.EnsureSuccessStatusCode();
+                        if (response.IsSuccessStatusCode)
                         {
-                            Application.Current.Dispatcher.Invoke(() => {
-                                this.MessageInfo = "Handle AHPWPLY  Error: " + returnMsg;
-                            }, DispatcherPriority.Background);
+                            HttpContent content = response.Content;
+                            //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
+                            string jsonContent = await content.ReadAsStringAsync();
+
+                            AAPSWPLY ahpwply = null;
+                            string returnMsg = string.Empty;
+
+                            if (Handle_AHPWPLY(jsonContent, out ahpwply, out returnMsg) == false)
+                            {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Handle AHPWPLY  Error: " + returnMsg;
+                                }, DispatcherPriority.Background);
+                            }
+                            else
+                            {
+                                //Connection reply successful
+                                this.hashPassword = ahpwply.PasswordData;
+
+                                //Connect to VPN or Citrix
+                                ConnectRemoteServer();
+                            }
                         }
                         else
                         {
-                            //Connection reply successful
-                            this.hashPassword = ahpwply.PasswordData;
-
-                            //Connect to VPN or Citrix
-                            ConnectRemoteServer();
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                            }, DispatcherPriority.Background);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Application.Current.Dispatcher.Invoke(() => {
-                            this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        this.MessageInfo = "HTTP Post Exception: " + ex.Message;
-                    }, DispatcherPriority.Background);
-                }
-
             }
         }
 
@@ -333,7 +412,7 @@ namespace EnterpriseAuth.ViewModels
 
         }
 
-        private bool Handle_VCONPLY(string DataContent, out VCONPLY vconply, out string ReturnMsg)
+        private bool Handle_AACONPLY(string DataContent, out AACONPLY vconply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -355,20 +434,20 @@ namespace EnterpriseAuth.ViewModels
                 }
                 else
                 {
-                    string VCONPLY_DecryptContent = string.Empty;
-                    string VCONPLY_DecryptReturnMsg = string.Empty;
-                    int VCONPLY_DecryptReturnCode = 0;
-                    VCONPLY_DecryptReturnCode = MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).DecryptByPrivateKey(httptrx.ecs, out VCONPLY_DecryptContent, out VCONPLY_DecryptReturnMsg);
-                    if (VCONPLY_DecryptReturnCode != 0)
+
+                    string DecryptECS = string.Empty;
+                    string returnMsg = string.Empty;
+                    int returnCode = MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).Decrypt_Check(httptrx.ecs, httptrx.ecssign, out DecryptECS, out returnMsg);
+                    if (returnCode != 0)
                     {
                         ReturnStatus = false;
-                        ReturnMsg = "Decrypt By PrivateKey Error";
+                        ReturnMsg = "Http RSA Decrypt Error, Message = " + returnMsg;
                         vconply = null;
                         return ReturnStatus;
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(VCONPLY_DecryptContent);
+                        ECS HESC = DeserializeObj._ECS(DecryptECS);
                         if (HESC == null)
                         {
                             ReturnStatus = false;
@@ -379,7 +458,7 @@ namespace EnterpriseAuth.ViewModels
                         }
                         else
                         {
-                            string DecrypStr = this.CheckDESData(HESC.Key, HESC.IV, httptrx.datacontent);
+                            string DecrypStr = this.DecryptDESData(HESC.Key, HESC.IV, httptrx.datacontent);
                             if (DecrypStr == string.Empty)
                             {
                                 ReturnStatus = false;
@@ -411,7 +490,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_APVRYPLY(string DataContent, out APVRYPLY apvryply, out string ReturnMsg)
+        private bool Handle_APVRYPLY(string DataContent, out AAUTHPLY apvryply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -433,11 +512,11 @@ namespace EnterpriseAuth.ViewModels
                 }
                 else
                 {
-                    string VCONPLY_DecryptContent = string.Empty;
-                    string VCONPLY_DecryptReturnMsg = string.Empty;
-                    int VCONPLY_DecryptReturnCode = 0;
-                    VCONPLY_DecryptReturnCode = MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).DecryptByPrivateKey(httptrx.ecs, out VCONPLY_DecryptContent, out VCONPLY_DecryptReturnMsg);
-                    if (VCONPLY_DecryptReturnCode != 0)
+                    string APVRYPLY_DecryptContent = string.Empty;
+                    string APVRYPLY_DecryptReturnMsg = string.Empty;
+                    int APVRYPLY_DecryptReturnCode = 0;
+                    APVRYPLY_DecryptReturnCode = MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).DecryptByPrivateKey(httptrx.ecs, out APVRYPLY_DecryptContent, out APVRYPLY_DecryptReturnMsg);
+                    if (APVRYPLY_DecryptReturnCode != 0)
                     {
                         ReturnStatus = false;
                         ReturnMsg = "Decrypt By PrivateKey Error";
@@ -446,7 +525,7 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(VCONPLY_DecryptContent);
+                        ECS HESC = DeserializeObj._ECS(APVRYPLY_DecryptContent);
                         if (HESC == null)
                         {
                             ReturnStatus = false;
@@ -457,7 +536,7 @@ namespace EnterpriseAuth.ViewModels
                         }
                         else
                         {
-                            string DecrypStr = this.CheckDESData(HESC.Key, HESC.IV, httptrx.datacontent);
+                            string DecrypStr = this.DecryptDESData(HESC.Key, HESC.IV, httptrx.datacontent);
                             if (DecrypStr == string.Empty)
                             {
                                 ReturnStatus = false;
@@ -489,7 +568,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_AHPWPLY(string DataContent, out AHPWPLY ahpwply, out string ReturnMsg)
+        private bool Handle_AHPWPLY(string DataContent, out AAPSWPLY ahpwply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -535,7 +614,7 @@ namespace EnterpriseAuth.ViewModels
                         }
                         else
                         {
-                            string DecrypStr = this.CheckDESData(HESC.Key, HESC.IV, httptrx.datacontent);
+                            string DecrypStr = this.DecryptDESData(HESC.Key, HESC.IV, httptrx.datacontent);
                             if (DecrypStr == string.Empty)
                             {
                                 ReturnStatus = false;
@@ -567,7 +646,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private string CheckDESData(string key, string iv, string DataContent)
+        private string DecryptDESData(string key, string iv, string DataContent)
         {
             AuthDES objDes = new AuthDES(key, iv);
             string DES_DecryptStr = string.Empty;
@@ -641,5 +720,18 @@ namespace EnterpriseAuth.ViewModels
             this.HashPasswordRequest();
         }
 
-    }
+
+
+        private string GetMacAddress()
+        {
+            string FirstEthernetMacAddress = string.Empty;
+            var EthernetInfo = NetworkInterface.GetAllNetworkInterfaces().Where(E => E.NetworkInterfaceType == NetworkInterfaceType.Ethernet).FirstOrDefault();
+            if (EthernetInfo != null)
+            {
+                FirstEthernetMacAddress = EthernetInfo.GetPhysicalAddress().ToString();
+            }
+
+            return FirstEthernetMacAddress;
+        }
+     }
 }

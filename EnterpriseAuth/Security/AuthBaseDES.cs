@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Security
 {
-    class AuthBaseDES
+    public class AuthBaseDES
     {
         //--------------  DES Security -----------------
         private string DES_key = string.Empty; //必須8碼  
@@ -57,5 +57,6 @@ namespace EnterpriseAuth.Security
                 return hexString;
             }
         }
+
     }
 }

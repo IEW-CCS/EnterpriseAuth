@@ -7,23 +7,38 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Security
 {
-     public class SecurityManager
+    public class SecurityManager 
     {
         private const string SIGNRSA = "signature";
-        private ConcurrentDictionary<string, AuthSecurity> RSADict = new ConcurrentDictionary<string, AuthSecurity>();
+        //private string Provider = "MY_SQL";
+        //private string ConnectStr = "server= localhost;database=authapi;user=root;password=qQ123456";
+        private string _ManagerName = "SecurityManager";
+        private ConcurrentDictionary<string, AuthSecurity> RSADict = null;
+        public string ManageName
+        {
+            get
+            {
+                return this._ManagerName;
+            }
+        }
 
-        public  AuthSecurity GetRSASecurity(string Key, string Type)
+        public SecurityManager()
+        {
+            RSADict = new ConcurrentDictionary<string, AuthSecurity>();
+        }
+
+
+        public AuthSecurity GetRSASecurity(string Key, string Type)
         {
             string RSAKey = string.Concat(Key, "_", Type);
             return this.RSADict.GetOrAdd(RSAKey, new AuthSecurity());
         }
 
-     
         public void SetRSASecurity(string Key, string Type, AuthSecurity Obj)
         {
             string RSAKey = string.Concat(Key, "_", Type);
-
         }
+
 
         public string EncryptByClientPublicKey(string Key, string Type, string Content, out string returnMsg)
         {

@@ -19,6 +19,7 @@ using WebSocket4Net;
 using EnterpriseAuth.Transactions;
 using EnterpriseAuth.Managers;
 using EnterpriseAuth.Security;
+using System.Net.NetworkInformation;
 
 namespace EnterpriseAuth.ViewModels
 {
@@ -107,16 +108,18 @@ namespace EnterpriseAuth.ViewModels
         {
             this.DisplayConnectingStatus();
 
-            APREGREQ registerRequest = new APREGREQ();
+
+
+            ARREGREQ registerRequest = new ARREGREQ();
             string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" + GlobalVaraible.REGISTER_LOGIN;
-            registerRequest.UserName = serverProfile.strUserName;
             //registerRequest.PassWord = serverProfile.strPassword;
             registerRequest.PassWord = this.userPassword;
             registerRequest.ClientRSAPublicKey = MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).PublicKey;
+            registerRequest.DeviceMacAddress = GetMacAddress();
             registerRequest.APPGuid = System.Reflection.Assembly.GetEntryAssembly().GetName().Name.ToString();
             registerRequest.APPVersion = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
             registerRequest.OSEnv = "Windows";
-            registerRequest.TimeStamp = DateTime.Now;
+    
 
             string registerRequestJson = JsonConvert.SerializeObject(registerRequest);
             AuthBaseDES BaseDES = new AuthBaseDES();
@@ -124,9 +127,9 @@ namespace EnterpriseAuth.ViewModels
             string registerRequestDES = BaseDES.EncryptDES(registerRequestJson);
 
             HttpTrx HttpSend = new HttpTrx();
-            HttpSend.username = serverProfile.strUserName;
+            HttpSend.username = this.UserName;
             HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-            HttpSend.procstep = EnumList.ProcessStep.AREG_REQ.ToString();
+            HttpSend.procstep = EnumList.ProcessStep.ARREGREQ.ToString();
             HttpSend.returncode = 0;
             HttpSend.returnmsg = string.Empty;
             HttpSend.datacontent = registerRequestDES;
@@ -156,7 +159,7 @@ namespace EnterpriseAuth.ViewModels
                         //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
                         string jsonContent = await content.ReadAsStringAsync();
 
-                        APREGPLY apregply = null;
+                        ARREGPLY apregply = null;
                         string returnMsg = string.Empty;
 
                         if (Handle_APREGPLY(jsonContent, out apregply, out returnMsg) == false)
@@ -179,6 +182,7 @@ namespace EnterpriseAuth.ViewModels
                             this.serverProfile.strServerPublicKey = apregply.ServerRSAPublicKey;
                             this.serverProfile.strHttpServiceURL = apregply.HttpServiceURL;
                             this.serverProfile.strWSServiceURL = apregply.WSServiceURL;
+        
                             MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientID = serverProfile.strUserName;
                             MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientPublicKey = apregply.ServerRSAPublicKey;
                             
@@ -209,83 +213,114 @@ namespace EnterpriseAuth.ViewModels
         {
             string ServerURL = "http://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/" + serverProfile.strHttpServiceURL;
 
-            AREGCMP compRequest = new AREGCMP();
+            ARREGCMP compRequest = new ARREGCMP();
             compRequest.Result = "OK";
 
             string compRequestJson = JsonConvert.SerializeObject(compRequest);
-            AuthBaseDES BaseDES = new AuthBaseDES();
 
-            string compRequestDES = BaseDES.EncryptDES(compRequestJson);
+            //------ 20220916 Not Base DES use AuthDES 加密方法
+            AuthDES DES = new AuthDES();
+            string compRequestDES = DES.EncryptDES(compRequestJson);
 
-            HttpTrx HttpSend = new HttpTrx();
-            HttpSend.username = serverProfile.strUserName;
-            HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-            HttpSend.procstep = EnumList.ProcessStep.AREG_REQ.ToString();
-            HttpSend.returncode = 0;
-            HttpSend.returnmsg = string.Empty;
-            HttpSend.datacontent = compRequestDES;
-            HttpSend.ecs = string.Empty;
-            HttpSend.ecssign = string.Empty;
+            ECS HECS = new ECS();
+            HECS.Algo = "DES";
+            HECS.Key = DES.GetKey();
+            HECS.IV = DES.GetIV();
 
-            var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
-            StringContent requestContent = null;
-            requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+            string ECSEncryptRetMsg = string.Empty;
+            string HECSJsonStr = JsonConvert.SerializeObject(HECS);
 
-            using (var httpClient = new HttpClient())
+            string rtnMsg = string.Empty;
+            string SignStr = string.Empty;
+            string ECSEncryptStr = string.Empty;
+
+            if (MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).Encrypt_Sign(HECSJsonStr, out ECSEncryptStr, out SignStr, out rtnMsg) != 0)
             {
-                httpClient.BaseAddress = new Uri(ServerURL);
 
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                // httpClient.DefaultRequestHeaders.Add("authorization", "token {api token}");
+                // Show Error Message 
 
-                try
+            }
+            else
+            {
+                HttpTrx HttpSend = new HttpTrx();
+                HttpSend.username = serverProfile.strUserName;
+                HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
+                HttpSend.procstep = EnumList.ProcessStep.ARREGCMP.ToString();
+                HttpSend.returncode = 0;
+                HttpSend.returnmsg = string.Empty;
+                HttpSend.datacontent = compRequestDES;
+                HttpSend.ecs = ECSEncryptStr;
+                HttpSend.ecssign = SignStr;
+
+                var modifiedAssetJSON = JsonConvert.SerializeObject(HttpSend);
+                StringContent requestContent = null;
+                requestContent = new StringContent(modifiedAssetJSON, Encoding.UTF8, "application/json");
+
+                using (var httpClient = new HttpClient())
                 {
-                    //this.serverProfile.strProfileProcessStep = ProcessStep
-                    HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
-                    //response.EnsureSuccessStatusCode();
-                    if (response.IsSuccessStatusCode)
+                    httpClient.BaseAddress = new Uri(ServerURL);
+
+                    httpClient.DefaultRequestHeaders.Accept.Clear();
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    httpClient.DefaultRequestHeaders.Add("authorization", "bearer " + this.serverProfile.strTokenID);
+
+                    try
                     {
-                        HttpContent content = response.Content;
-                        //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
-                        string jsonContent = await content.ReadAsStringAsync();
-
-                        AREGFIN aregfin = null;
-                        string returnMsg = string.Empty;
-
-                        if (Handle_AREGFIN(jsonContent, out aregfin, out returnMsg) == false)
+                        //this.serverProfile.strProfileProcessStep = ProcessStep
+                        HttpResponseMessage response = await httpClient.PostAsync(ServerURL, requestContent);
+                        //response.EnsureSuccessStatusCode();
+                        if (response.IsSuccessStatusCode)
                         {
-                            Application.Current.Dispatcher.Invoke(() => {
-                                this.MessageInfo = "Handle AREGFIN  Error: " + returnMsg;
-                            }, DispatcherPriority.Background);
+                            HttpContent content = response.Content;
+                            //string jsonContent = content.ReadAsStringAsync().Result.Replace("\\", "").Trim(new char[1] { '"' }); ;
+                            string jsonContent = await content.ReadAsStringAsync();
+
+                            ARREGFIN arregfin = null;
+                            string returnMsg = string.Empty;
+
+                            if (Handle_ARREGFIN(jsonContent, out arregfin, out returnMsg) == false)
+                            {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Handle ARREGFIN  Error: " + returnMsg;
+                                }, DispatcherPriority.Background);
+                            }
+                            else
+                            {
+                                //this.clientID = aregfin.ServerName;
+                                //this.serverProfile.strMyPublicKey = apregply.serverPublicKey;
+                                //this.serverProfile.strCredential = apregply.credentialHash;
+                                serverProfile.strAuthenticationTokenID = arregfin.AuthenticationToken;
+                                serverProfile.strAuthenticationURL = arregfin.AuthenticationURL;
+                                // 20220926 不是第一次連線不需要改ObjectSecurity
+                                //MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientID = serverProfile.strUserName;
+                                //MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientPublicKey = serverProfile.strMyPublicKey;
+                                this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Register Complete";
+                                    OnProfileUpdated();
+                                }, DispatcherPriority.Background);
+
+                            }
                         }
                         else
                         {
-                            //this.clientID = aregfin.ServerName;
-                            //this.serverProfile.strMyPublicKey = apregply.serverPublicKey;
-                            //this.serverProfile.strCredential = apregply.credentialHash;
-                            serverProfile.strAuthenticationTokenID = aregfin.AuthenticationToken;
-                            serverProfile.strAuthenticationURL = aregfin.AuthenticationURL;
-                            MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientID = serverProfile.strUserName;
-                            MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientPublicKey = serverProfile.strMyPublicKey;
-                            this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
-                            OnProfileUpdated();
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                            }, DispatcherPriority.Background);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Application.Current.Dispatcher.Invoke(() => {
-                            this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        this.MessageInfo = "HTTP Post Exception: " + ex.Message;
-                    }, DispatcherPriority.Background);
-                }
 
+                }
             }
         }
 
@@ -377,7 +412,7 @@ namespace EnterpriseAuth.ViewModels
         {
 
             WSTrx wstrx = JsonConvert.DeserializeObject<WSTrx>(e.Message);
-            if (wstrx.ProcStep == EnumList.ProcessStep.WCON_PLY.ToString())
+            if (wstrx.ProcStep == EnumList.ProcessStep.ARWSCPLY.ToString())
             {
                 if (wstrx.ReturnCode == 0)
                 {
@@ -397,7 +432,7 @@ namespace EnterpriseAuth.ViewModels
                     }, DispatcherPriority.Background);
                 }
             }
-            else if (wstrx.ProcStep == EnumList.ProcessStep.WUID_ANN.ToString())
+            else if (wstrx.ProcStep == EnumList.ProcessStep.ARWSCANN.ToString())
             {
                 if (wstrx.ReturnCode == 0)
                 {
@@ -406,11 +441,23 @@ namespace EnterpriseAuth.ViewModels
                     //this.serviceUUID = notifyData.serviceUUID;
                     //Console.WriteLine($"Servier Reply Data: {e.Message}！");
 
-                    this.DisplayBlueToothStatus();
-                    this.btManager.ScanAndConnect();
-                    this.btManager.BLEMessageEvent += BLEMessage_Received;
-                    this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
-                    this.btManager.CredentialContentEvent += CredentialContent_Received;
+                    /* 20220926 Chris - Receive Data */
+                    if (Handle_ARWSCANN(wstrx.DataContent, out ARWSCANN arwscann, out string ReturnMsg))
+                    {
+                        this.DisplayBlueToothStatus();
+                        this.btManager.ScanAndConnect();
+                        this.btManager.BLEMessageEvent += BLEMessage_Received;
+                        this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
+                        this.btManager.CredentialContentEvent += CredentialContent_Received;
+                    }
+                    else
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            this.MessageInfo = "Handle ARWSCANN Error  " ;
+                        }, DispatcherPriority.Background);
+
+                    }
                 }
                 else
                 {
@@ -422,10 +469,8 @@ namespace EnterpriseAuth.ViewModels
 
             }
 
-
-
-                /*
-                ClientNotify notifyData = new ClientNotify();
+            /*
+            ClientNotify notifyData = new ClientNotify();
             notifyData = JsonConvert.DeserializeObject<ClientNotify>(e.Message);
             if(notifyData.processStep == "VERIFY")
             {
@@ -535,7 +580,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_APREGPLY(string DataContent, out APREGPLY apregply, out string ReturnMsg)
+        private bool Handle_APREGPLY(string DataContent, out ARREGPLY apregply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -581,7 +626,7 @@ namespace EnterpriseAuth.ViewModels
                         }
                         else
                         {
-                            string DecrypStr = this.CheckDESData(HESC.Key, HESC.IV, httptrx.datacontent);
+                            string DecrypStr = this.DecryptDESData(HESC.Key, HESC.IV, httptrx.datacontent);
                             if (DecrypStr == string.Empty)
                             {
                                 ReturnStatus = false;
@@ -613,7 +658,29 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_AREGFIN(string DataContent, out AREGFIN aregfin, out string ReturnMsg)
+
+        private bool Handle_ARWSCANN(string DataContent, out ARWSCANN arwscann, out string ReturnMsg)
+        {
+
+            bool ReturnStatus = false;
+            arwscann = DeserializeObj._ARWSCANN(DataContent);
+            if (arwscann == null)
+            {
+                ReturnStatus = false;
+                ReturnMsg = "Deserialize ARWSCANN Object Error";
+                arwscann = null;
+                return ReturnStatus;
+            }
+            else
+            {
+                ReturnStatus = true;
+                ReturnMsg = string.Empty;
+                return ReturnStatus;
+            }
+
+        }
+
+        private bool Handle_ARREGFIN(string DataContent, out ARREGFIN aregfin, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -659,7 +726,7 @@ namespace EnterpriseAuth.ViewModels
                         }
                         else
                         {
-                            string DecrypStr = this.CheckDESData(HESC.Key, HESC.IV, httptrx.datacontent);
+                            string DecrypStr = this.DecryptDESData(HESC.Key, HESC.IV, httptrx.datacontent);
                             if (DecrypStr == string.Empty)
                             {
                                 ReturnStatus = false;
@@ -691,7 +758,10 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private string CheckDESData(string key, string iv, string DataContent)
+
+
+
+        private string DecryptDESData(string key, string iv, string DataContent)
         {
             AuthDES objDes = new AuthDES(key, iv);
             string DES_DecryptStr = string.Empty;
@@ -704,6 +774,19 @@ namespace EnterpriseAuth.ViewModels
                 DES_DecryptStr = string.Empty;
             }
             return DES_DecryptStr;
+        }
+
+
+        private string GetMacAddress()
+        {
+            string FirstEthernetMacAddress = string.Empty;
+            var EthernetInfo = NetworkInterface.GetAllNetworkInterfaces().Where(E => E.NetworkInterfaceType == NetworkInterfaceType.Ethernet).FirstOrDefault();
+            if(EthernetInfo != null)
+            {
+                FirstEthernetMacAddress = EthernetInfo.GetPhysicalAddress().ToString();
+            }
+
+            return FirstEthernetMacAddress;
         }
 
     }

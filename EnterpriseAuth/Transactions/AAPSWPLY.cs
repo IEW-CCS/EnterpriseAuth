@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class AREGCMP
+    class AAPSWPLY
     {
-        public string Result { get; set; }
-        public AREGCMP()
+        public string PasswordData { get; set; }
+
+        public AAPSWPLY()
         {
-            this.Result = "";
+            this.PasswordData = "";
         }
     }
-
 }

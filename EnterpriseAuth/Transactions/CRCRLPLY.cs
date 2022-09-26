@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace EnterpriseAuth.Transactions
 {
-    class CCREDPLY
+    class CRCRLPLY
     {
         public string ServerName { get; set; }
         public string Credential { get; set; }
         public DateTime TimeStamp { get; set; }
 
-        public CCREDPLY()
+        public CRCRLPLY()
         {
             ServerName = string.Empty;
             Credential = string.Empty;

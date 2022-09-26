@@ -24,6 +24,21 @@ namespace EnterpriseAuth.Transactions
             return obj;
 
         }
+
+        public static WSTrx _WSTrx(string DataContent)
+        {
+            WSTrx obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<WSTrx>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+
+        }
         public static ECS _ECS(string DataContent)
         {
             ECS obj = null;
@@ -37,12 +52,12 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static APREGREQ _APREGREQ(string DataContent)
+        public static ARREGREQ _APREGREQ(string DataContent)
         {
-            APREGREQ obj = null;
+            ARREGREQ obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<APREGREQ>(DataContent);
+                obj = JsonConvert.DeserializeObject<ARREGREQ>(DataContent);
             }
             catch
             {
@@ -50,26 +65,12 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static APREGPLY _APREGPLY(string DataContent)
+        public static ARREGPLY _APREGPLY(string DataContent)
         {
-            APREGPLY obj = null;
+            ARREGPLY obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<APREGPLY>(DataContent);
-            }
-            catch
-            {
-                obj = null;
-            }
-            return obj;
-        }
-
-        public static AREGFIN _AREGFIN(string DataContent)
-        {
-            AREGFIN obj = null;
-            try
-            {
-                obj = JsonConvert.DeserializeObject<AREGFIN>(DataContent);
+                obj = JsonConvert.DeserializeObject<ARREGPLY>(DataContent);
             }
             catch
             {
@@ -79,54 +80,12 @@ namespace EnterpriseAuth.Transactions
         }
 
 
-        public static VCONREQ _VCONREQ(string DataContent)
+        public static ARWSCANN _ARWSCANN(string DataContent)
         {
-            VCONREQ obj = null;
+            ARWSCANN obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<VCONREQ>(DataContent);
-            }
-            catch
-            {
-                obj = null;
-            }
-            return obj;
-        }
-
-        public static VCONPLY _VCONPLY(string DataContent)
-        {
-            VCONPLY obj = null;
-            try
-            {
-                obj = JsonConvert.DeserializeObject<VCONPLY>(DataContent);
-            }
-            catch
-            {
-                obj = null;
-            }
-            return obj;
-        }
-
-        public static AHPWREQ _AHPWREQ(string DataContent)
-        {
-            AHPWREQ obj = null;
-            try
-            {
-                obj = JsonConvert.DeserializeObject<AHPWREQ>(DataContent);
-            }
-            catch
-            {
-                obj = null;
-            }
-            return obj;
-        }
-
-        public static AHPWPLY _AHPWPLY(string DataContent)
-        {
-            AHPWPLY obj = null;
-            try
-            {
-                obj = JsonConvert.DeserializeObject<AHPWPLY>(DataContent);
+                obj = JsonConvert.DeserializeObject<ARWSCANN>(DataContent);
             }
             catch
             {
@@ -136,12 +95,13 @@ namespace EnterpriseAuth.Transactions
         }
 
 
-        public static APREGCMP _APREGCMP(string DataContent)
+
+        public static ARREGFIN _AREGFIN(string DataContent)
         {
-            APREGCMP obj = null;
+            ARREGFIN obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<APREGCMP>(DataContent);
+                obj = JsonConvert.DeserializeObject<ARREGFIN>(DataContent);
             }
             catch
             {
@@ -149,12 +109,14 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static CCREDREQ _CCREDREQ(string DataContent)
+
+
+        public static AACONREQ _AACONREQ(string DataContent)
         {
-            CCREDREQ obj = null;
+            AACONREQ obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<CCREDREQ>(DataContent);
+                obj = JsonConvert.DeserializeObject<AACONREQ>(DataContent);
             }
             catch
             {
@@ -162,12 +124,82 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static CCREDPLY _CCREDPLY(string DataContent)
+
+        public static AACONPLY _VCONPLY(string DataContent)
         {
-            CCREDPLY obj = null;
+            AACONPLY obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<CCREDPLY>(DataContent);
+                obj = JsonConvert.DeserializeObject<AACONPLY>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+        public static AAPSWREQ _AHPWREQ(string DataContent)
+        {
+            AAPSWREQ obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<AAPSWREQ>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+        public static AAPSWPLY _AHPWPLY(string DataContent)
+        {
+            AAPSWPLY obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<AAPSWPLY>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+
+
+        public static ARREGCMP _APREGCMP(string DataContent)
+        {
+            ARREGCMP obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<ARREGCMP>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+        public static CRCRLREQ _CCREDREQ(string DataContent)
+        {
+            CRCRLREQ obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<CRCRLREQ>(DataContent);
+            }
+            catch
+            {
+                obj = null;
+            }
+            return obj;
+        }
+        public static CRCRLPLY _CCREDPLY(string DataContent)
+        {
+            CRCRLPLY obj = null;
+            try
+            {
+                obj = JsonConvert.DeserializeObject<CRCRLPLY>(DataContent);
             }
             catch
             {
@@ -189,12 +221,12 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static APVRYREQ _APVRYREQ(string DataContent)
+        public static AAUTHREQ _APVRYREQ(string DataContent)
         {
-            APVRYREQ obj = null;
+            AAUTHREQ obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<APVRYREQ>(DataContent);
+                obj = JsonConvert.DeserializeObject<AAUTHREQ>(DataContent);
             }
             catch
             {
@@ -202,12 +234,12 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
-        public static APVRYPLY _APVRYPLY(string DataContent)
+        public static AAUTHPLY _APVRYPLY(string DataContent)
         {
-            APVRYPLY obj = null;
+            AAUTHPLY obj = null;
             try
             {
-                obj = JsonConvert.DeserializeObject<APVRYPLY>(DataContent);
+                obj = JsonConvert.DeserializeObject<AAUTHPLY>(DataContent);
             }
             catch
             {
