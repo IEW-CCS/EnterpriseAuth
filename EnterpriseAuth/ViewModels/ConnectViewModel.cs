@@ -30,7 +30,8 @@ namespace EnterpriseAuth.ViewModels
         public ServerProfile serverProfile = new ServerProfile();
         private string messageInfo = "";
         private BitmapImage stateImage = new BitmapImage();
-        BlueToothManager btManager = new BlueToothManager();
+        //BlueToothManager btManager = new BlueToothManager();
+        BlueToothManager btManager;
 
         private string userPassword = "";
         private string passCode = "";
@@ -87,6 +88,7 @@ namespace EnterpriseAuth.ViewModels
         public ConnectViewModel(ServerProfile sProfile)
         {
             this.serverProfile = sProfile;
+            this.btManager = MainWindow._btm;
         }
 
         public async void StartAuthentication()
@@ -143,7 +145,7 @@ namespace EnterpriseAuth.ViewModels
 
                     httpClient.DefaultRequestHeaders.Accept.Clear();
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                    httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + this.serverProfile.strAuthenticationTokenID);
 
                     try
                     {
@@ -163,7 +165,7 @@ namespace EnterpriseAuth.ViewModels
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Handle VCONPLY  Error: " + returnMsg;
+                                    this.MessageInfo = "Handle AACONPLY  Error: " + returnMsg;
                                 }, DispatcherPriority.Background);
                             }
                             else
@@ -230,7 +232,7 @@ namespace EnterpriseAuth.ViewModels
                 HttpTrx HttpSend = new HttpTrx();
                 HttpSend.username = serverProfile.strUserName;
                 HttpSend.devicetype = EnumList.DeviceType.CONSOLE.ToString();
-                HttpSend.procstep = EnumList.ProcessStep.AACONREQ.ToString();
+                HttpSend.procstep = EnumList.ProcessStep.AAUTHREQ.ToString();
                 HttpSend.returncode = 0;
                 HttpSend.returnmsg = string.Empty;
                 HttpSend.datacontent = verifyRequestDES;
@@ -247,7 +249,7 @@ namespace EnterpriseAuth.ViewModels
 
                     httpClient.DefaultRequestHeaders.Accept.Clear();
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                    httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + this.serverProfile.strAuthenticationTokenID);
 
                     try
                     {
@@ -263,7 +265,7 @@ namespace EnterpriseAuth.ViewModels
                             AAUTHPLY apvryply = null;
                             string returnMsg = string.Empty;
 
-                            if (Handle_APVRYPLY(jsonContent, out apvryply, out returnMsg) == false)
+                            if (Handle_AAUTHPLY(jsonContent, out apvryply, out returnMsg) == false)
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
@@ -356,7 +358,7 @@ namespace EnterpriseAuth.ViewModels
 
                     httpClient.DefaultRequestHeaders.Accept.Clear();
                     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    httpClient.DefaultRequestHeaders.Add("authorization", "Bearer " + this.serverProfile.strTokenID);
+                    httpClient.DefaultRequestHeaders.Add("Authorization", "bearer " + this.serverProfile.strAuthenticationTokenID);
 
                     try
                     {
@@ -372,18 +374,21 @@ namespace EnterpriseAuth.ViewModels
                             AAPSWPLY ahpwply = null;
                             string returnMsg = string.Empty;
 
-                            if (Handle_AHPWPLY(jsonContent, out ahpwply, out returnMsg) == false)
+                            if (Handle_AAPSWPLY(jsonContent, out ahpwply, out returnMsg) == false)
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Handle AHPWPLY  Error: " + returnMsg;
+                                    this.MessageInfo = "Handle AAPSWREQ  Error: " + returnMsg;
                                 }, DispatcherPriority.Background);
                             }
                             else
                             {
                                 //Connection reply successful
                                 this.hashPassword = ahpwply.PasswordData;
-
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    this.MessageInfo = "Hash PWD:  " + this.hashPassword;
+                                }, DispatcherPriority.Background);
                                 //Connect to VPN or Citrix
                                 ConnectRemoteServer();
                             }
@@ -409,6 +414,7 @@ namespace EnterpriseAuth.ViewModels
 
         public void ConnectRemoteServer()
         {
+            this.btManager.DisconnectDevice();
 
         }
 
@@ -468,7 +474,7 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                vconply = DeserializeObj._VCONPLY(DecrypStr);
+                                vconply = DeserializeObj._AACONPLY(DecrypStr);
                                 if (vconply == null)
                                 {
                                     ReturnStatus = false;
@@ -490,7 +496,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_APVRYPLY(string DataContent, out AAUTHPLY apvryply, out string ReturnMsg)
+        private bool Handle_AAUTHPLY(string DataContent, out AAUTHPLY apvryply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -568,7 +574,7 @@ namespace EnterpriseAuth.ViewModels
             }
         }
 
-        private bool Handle_AHPWPLY(string DataContent, out AAPSWPLY ahpwply, out string ReturnMsg)
+        private bool Handle_AAPSWPLY(string DataContent, out AAPSWPLY ahpwply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
             HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
@@ -624,7 +630,7 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                ahpwply = DeserializeObj._AHPWPLY(DecrypStr);
+                                ahpwply = DeserializeObj._AAPSWPLY(DecrypStr);
                                 if (ahpwply == null)
                                 {
                                     ReturnStatus = false;

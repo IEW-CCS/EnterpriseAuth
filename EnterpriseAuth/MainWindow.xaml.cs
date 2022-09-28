@@ -28,11 +28,12 @@ namespace EnterpriseAuth
     {
         public int iSelectedIndex = -1;
         public List<ServerProfile> profileList = new List<ServerProfile>();
-        public BlueToothManager _btm;
+        public static BlueToothManager _btm;
         public  static SecurityManager ObjectSecutiry = new SecurityManager();
         public MainWindow()
         {
             InitializeComponent();
+            _btm = new BlueToothManager();
 
             this.ReadProfiles();
             this.listServerProfile.ItemsSource = this.profileList;
@@ -141,10 +142,10 @@ namespace EnterpriseAuth
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if(this._btm != null)
+            if(_btm != null)
             {
-                this._btm.DisconnectDevice();
-                this._btm = null;
+                _btm.DisconnectDevice();
+                _btm = null;
                 GC.Collect();
             }
 

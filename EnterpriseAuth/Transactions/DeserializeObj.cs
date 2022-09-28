@@ -125,7 +125,7 @@ namespace EnterpriseAuth.Transactions
             return obj;
         }
 
-        public static AACONPLY _VCONPLY(string DataContent)
+        public static AACONPLY _AACONPLY(string DataContent)
         {
             AACONPLY obj = null;
             try
@@ -139,7 +139,7 @@ namespace EnterpriseAuth.Transactions
             return obj;
         }
 
-        public static AAPSWREQ _AHPWREQ(string DataContent)
+        public static AAPSWREQ _AAPSWREQ(string DataContent)
         {
             AAPSWREQ obj = null;
             try
@@ -153,7 +153,7 @@ namespace EnterpriseAuth.Transactions
             return obj;
         }
 
-        public static AAPSWPLY _AHPWPLY(string DataContent)
+        public static AAPSWPLY _AAPSWPLY(string DataContent)
         {
             AAPSWPLY obj = null;
             try

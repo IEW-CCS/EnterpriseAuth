@@ -84,7 +84,7 @@ namespace EnterpriseAuth.Managers
                 if (this.VerifyResultCharacteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
                 {
                     Console.WriteLine("Subscribe Value Changed Event");
-                    this.VerifyResultCharacteristic.ValueChanged += Characteristic_ValueChanged;
+                    //this.VerifyResultCharacteristic.ValueChanged += Characteristic_ValueChanged;
 
                     // Set the notify enable flag
                     try
@@ -342,7 +342,7 @@ namespace EnterpriseAuth.Managers
 
                 arg.bleMessage = "OK";
                 this.BiometricsVerifyEvent(this, arg);
-
+                Thread.Sleep(2000);
                 GattReadResult result = await this.CredentialContentCharacteristic.ReadValueAsync(BluetoothCacheMode.Uncached);
                 if (result.Status == GattCommunicationStatus.Success)
                 {
@@ -359,7 +359,7 @@ namespace EnterpriseAuth.Managers
                 {
                     Console.WriteLine($"Read Value failed: {result.Status}");
                 }
-
+                this.CredentialContentEvent(this, arg);
             }
             else
             {
@@ -378,12 +378,23 @@ namespace EnterpriseAuth.Managers
         {
             if (this.BioDevice != null)
             {
-                //Console.WriteLine("Before Dispose Status: {0}", this._bleDevice.ConnectionStatus.ToString());
-                //this._bleDevice.ConnectionStatusChanged -= ConnectionStatusChangeHandlerAsync;
+                Console.WriteLine("Dispose all Server & Device objects");
+
+                this._watcher.Received -= OnAdvertisementReceived;
+                this._watcher = null;
+
+                this.VerifyResultCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+                this.VerifyResultCharacteristic = null;
+                this.BioSwitchCharacteristic = null;
+                this.CredentialContentCharacteristic = null;
+
+                this.BioService.Dispose();
+                this.BioService = null;
+
+                this.BioDevice.ConnectionStatusChanged -= Device_ConnectionStatusChanged;
                 this.BioDevice.Dispose();
                 this.BioDevice = null;
                 GC.Collect();
-                //Console.WriteLine("After Dispose Status: {0}", this._bleDevice.ConnectionStatus.ToString());
             }
         }
     }

@@ -38,7 +38,8 @@ namespace EnterpriseAuth.ViewModels
         public WebSocket webSocket4Net = null;
 
         private string credentialContent = "";
-        BlueToothManager btManager = new BlueToothManager();
+        //BlueToothManager btManager = new BlueToothManager();
+        BlueToothManager btManager;
 
         /*
         public ServerProfile ProfileObject
@@ -95,6 +96,7 @@ namespace EnterpriseAuth.ViewModels
         public RegisterViewModel(ServerProfile sProfile)
         {
             this.serverProfile = sProfile;
+            this.btManager = MainWindow._btm;
         }
 
         public void TestRegisterComplete()
@@ -302,6 +304,7 @@ namespace EnterpriseAuth.ViewModels
                                     OnProfileUpdated();
                                 }, DispatcherPriority.Background);
 
+                                this.btManager.DisconnectDevice();
                             }
                         }
                         else

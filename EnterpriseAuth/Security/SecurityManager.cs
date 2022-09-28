@@ -37,6 +37,7 @@ namespace EnterpriseAuth.Security
         public void SetRSASecurity(string Key, string Type, AuthSecurity Obj)
         {
             string RSAKey = string.Concat(Key, "_", Type);
+            this.RSADict.AddOrUpdate(RSAKey, Obj, (key, oldvalue) => Obj);
         }
 
 
