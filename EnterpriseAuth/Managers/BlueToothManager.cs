@@ -20,37 +20,37 @@ namespace EnterpriseAuth.Managers
         public event EventHandler BLEMessageEvent;
         public event EventHandler CredentialContentEvent;
 
-        BluetoothLEAdvertisementWatcher _watcher;
+        BluetoothLEAdvertisementWatcher _watcher = new BluetoothLEAdvertisementWatcher();
 
-        //BLE simulator UUID list
-        //private string bioServiceUUID = "80d27b8a-f1b4-474e-9398-b686f5e71bfb";
-        //private string bioSwitchFlagUUID = "48fe1431-5edd-4177-9050-77ad1a629d27";
-        //private string bioVerifyResultUUID = "c43402ad-a4bd-46c8-9893-d5a78e44c885";
-
-        //LightBlue simulator UUID list
-        private string deviceName = "BioAuth";
+        //UUID list
+        private string deviceName = "BioAuth2";
         private Guid bioDeviceUUID = new Guid("ada5adcc-a829-4b05-bb0e-9ac4a40d2193");
-        private Guid bioServiceUUID = new Guid("e593247c-bc00-41a3-93d0-3ad4b64b27cb");
-        private Guid bioSwitchFlagUUID = new Guid("97a1c8e5-e399-4124-a363-750d1c7102af");
-        private Guid bioVerifyResultUUID = new Guid("4e4a3a1b-fd4a-40a5-a08f-586078499da9");
-        private Guid bioCredentialUUID = new Guid("92f59a03-0e61-41eb-b758-64460c72706a");
 
-        //private Guid bioDeviceUUID = new Guid("ADA5ADCC-A829-4B05-BB0E-9AC4A40D2193");
-        //private Guid bioServiceUUID = new Guid("E593247C-BC00-41A3-93D0-3AD4B64B27CB");
-        //private Guid bioSwitchFlagUUID = new Guid("97A1C8E5-E399-4124-A363-750D1C7102AF");
-        //private Guid bioVerifyResultUUID = new Guid("4E4A3A1B-FD4A-40A5-A08F-586078499DA9");
-        //private Guid bioCredentialUUID = new Guid("ADA5ADCC-A829-4B05-BB0E-9AC4A40D2193");
+        //private Guid bioServiceUUID = new Guid("e593247c-bc00-41a3-93d0-3ad4b64b27cb");
+        //private Guid bioSwitchFlagUUID = new Guid("97a1c8e5-e399-4124-a363-750d1c7102af");
+        //private Guid bioVerifyResultUUID = new Guid("4e4a3a1b-fd4a-40a5-a08f-586078499da9");
+        //private Guid bioCredentialUUID = new Guid("92f59a03-0e61-41eb-b758-64460c72706a");
 
 
+        private Guid bioServiceUUID = new Guid("49a92bf1-b243-4b92-9537-815476f2d06b");
+        private Guid bioSwitchFlagUUID = new Guid("d24385a6-60e8-4976-bb20-c89567a79527");
+        private Guid bioVerifyResultUUID = new Guid("ab3d255f-fd36-42d8-a575-8cc27b651bec");
+        private Guid bioCredentialUUID = new Guid("59f87364-6a96-4c25-8e3b-7424d7a56bc8");
+
+        
         public BluetoothLEDevice BioDevice { get; set; }
         public GattDeviceService BioService { get; set; }
         public GattCharacteristic BioSwitchCharacteristic { get; set; }
         public GattCharacteristic VerifyResultCharacteristic { get; set; }
         public GattCharacteristic CredentialContentCharacteristic { get; set; }
+        
+        public BluetoothConnectionStatus connectionStatus { get; set; }
 
         public void ScanAndConnect()
         {
-            this._watcher = new BluetoothLEAdvertisementWatcher();
+            //this._watcher = new BluetoothLEAdvertisementWatcher();
+            Console.WriteLine("Watcher Status after New operation: " + this._watcher.Status.ToString());
+
             this._watcher.ScanningMode = BluetoothLEScanningMode.Active;
 
             // Only activate the watcher when we're recieving values >= -80
@@ -68,42 +68,56 @@ namespace EnterpriseAuth.Managers
 
             // Starting watching for advertisements
             this._watcher.Start();
+            Console.WriteLine("Watcher Status after Start operation: " + this._watcher.Status.ToString());
         }
 
         private async void Device_ConnectionStatusChanged(BluetoothLEDevice device, object args)
         {
             if (device == null)
             {
-                Console.WriteLine("Device_ConnectionStatusChanged: Device is null");
+                Console.WriteLine("Device_ConnectionStatusChanged: Device_ConnectionStatusChanged: Device is null");
                 return;
             }
 
+            Console.WriteLine("Device_ConnectionStatusChanged -> BluetoothConnectionStatus:  {0}", device.ConnectionStatus);
+
             if (device.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
-                Console.WriteLine("Device ConnectionStatus is Connected");
-                if (this.VerifyResultCharacteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
-                {
-                    Console.WriteLine("Subscribe Value Changed Event");
-                    //this.VerifyResultCharacteristic.ValueChanged += Characteristic_ValueChanged;
-
-                    // Set the notify enable flag
-                    try
+                this.connectionStatus = BluetoothConnectionStatus.Connected;
+                    /*
+                    if(this.VerifyResultCharacteristic != null)
                     {
-                        Console.WriteLine("WriteClientCharacteristicConfigurationDescriptorAsync()...");
-                        await this.VerifyResultCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("WriteClientCharacteristicConfigurationDescriptorAsync Exception: {0}", ex.Message);
-                    }
-                }
+                        if (this.VerifyResultCharacteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
+                        {
+                            Console.WriteLine("Device_ConnectionStatusChanged: Subscribe Value Changed Event");
 
+                            // Set the notify enable flag
+                            try
+                            {
+                                Console.WriteLine("Device_ConnectionStatusChanged: WriteClientCharacteristicConfigurationDescriptorAsync()...");
+                                await this.VerifyResultCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Device_ConnectionStatusChanged: WriteClientCharacteristicConfigurationDescriptorAsync Exception: {0}", ex.Message);
+                            }
+                        }
+
+                        //Console.WriteLine("Device_ConnectionStatusChanged: Device ConnectionStatus is Connected");
+                    }
+                    */
             }
 
             if (device.ConnectionStatus == BluetoothConnectionStatus.Disconnected)
             {
-                Console.WriteLine("Device ConnectionStatus is Disconnected");
-                this.VerifyResultCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+                Console.WriteLine("Device_ConnectionStatusChanged: Device ConnectionStatus is Disconnected");
+                this.connectionStatus = BluetoothConnectionStatus.Disconnected;
+
+                if(this.VerifyResultCharacteristic != null)
+                {
+                    this.VerifyResultCharacteristic.ValueChanged -= VerifyCharacteristic_ValueChanged;
+                }
+                this.BioDevice.ConnectionStatusChanged -= Device_ConnectionStatusChanged;
             }
         }
 
@@ -121,6 +135,7 @@ namespace EnterpriseAuth.Managers
 
                 this._watcher.Received -= OnAdvertisementReceived;
                 this._watcher.Stop();
+                Console.WriteLine("Watcher Status after Stop operation: " + this._watcher.Status.ToString());
 
                 ConnectDevice(eventArgs.BluetoothAddress);
             }
@@ -132,16 +147,18 @@ namespace EnterpriseAuth.Managers
             try
             {
                 //BluetoothLEDevice bleDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
-                this.BioDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+                //this.BioDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+
+                if (this.BioDevice == null)
+                {
+                    this.BioDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+                }
+
                 if (this.BioDevice != null)
                 {
                     //this._bleDevice = bleDevice;
                     Console.WriteLine("Connect to BioAuth successful !");
-                    Console.WriteLine(String.Format("  DeviceID: {0}", this.BioDevice.DeviceId));
-                    Console.WriteLine(String.Format("  BluetoothDeviceID: {0}", this.BioDevice.BluetoothDeviceId));
-                    Console.WriteLine(String.Format("  ConnectionStatus: {0}", this.BioDevice.ConnectionStatus));
-                    Console.WriteLine(String.Format("  DeviceInformation ID: {0}", this.BioDevice.DeviceInformation.Id));
-                    Console.WriteLine(String.Format("  DeviceInformation Name: {0}", this.BioDevice.DeviceInformation.Name));
+                    this.BioDevice.ConnectionStatusChanged += Device_ConnectionStatusChanged;
 
                     try
                     {
@@ -150,17 +167,16 @@ namespace EnterpriseAuth.Managers
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             var services = result.Services;
-                            //Console.WriteLine(String.Format("Found {0} services", services.Count));
                             foreach (var service in services)
                             {
                                 Console.WriteLine("Service UUID: {0}", service.Uuid);
 
                                 if(service.Uuid.ToString() == this.bioServiceUUID.ToString().ToLower())
                                 {
-                                    Console.WriteLine("Found Specific Service");
-                                    Console.WriteLine(String.Format("Found {0} services", services.Count));
+                                    Console.WriteLine("Found bioServiceUUID Service");
                                     this.BioService = service;
                                     await GetCharacteristicsInfo(this.BioService);
+                                    await TurnOnBiometricsVerify();
                                 }
                             }
                         }
@@ -173,7 +189,7 @@ namespace EnterpriseAuth.Managers
                     {
                         Console.WriteLine("GetGattServices Exception: " + ex.Message);
                     }
-                    this.BioDevice.ConnectionStatusChanged += Device_ConnectionStatusChanged;
+
                     Console.WriteLine();
                 }
             }
@@ -203,40 +219,31 @@ namespace EnterpriseAuth.Managers
                             {
                                 Console.WriteLine("Found BioSwitchFlag Characteristic!!");
                                 this.BioSwitchCharacteristic = characteristic;
+                                ShowCharacteristicProperty(characteristic);
 
                                 //Console.WriteLine("Read Value from BioSwitchFlag Characteristic");
                                 //await ReadCharacteristicValue(characteristic);
 
-                                Console.WriteLine("Turn ON BioSwitchFlag Characteristic");
-                                var writeBuffer = CryptographicBuffer.ConvertStringToBinary("ON", BinaryStringEncoding.Utf8);
-                                var writeSuccessful = await WriteValueToCharacteristic(characteristic, writeBuffer);
-                                if(writeSuccessful)
-                                {
-                                    Console.WriteLine("Turn ON Biometrics Successful, wait for verify result");
-                                    //Trigger Event Handler (Delegate) to Inform RegisterViewModel
-                                    BLEMessageEventArgs arg = new BLEMessageEventArgs();
-                                    arg.bleMessage = "Waiting for Biometrics Verify";
-                                    this.BLEMessageEvent(this, arg);
-                                }
+                                //await TurnOnBiometricsVerify();
                             }
 
                             if (characteristic.Uuid.ToString().ToLower() == this.bioVerifyResultUUID.ToString().ToLower())
                             {
                                 Console.WriteLine("Found BioVerifyResult Characteristic!!");
-                                Console.WriteLine("Subscribe Notification for BioVerifyResult Characteristic");
                                 this.VerifyResultCharacteristic = characteristic;
 
-                                var clientResult = await this.VerifyResultCharacteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
+                                //var clientResult = await this.VerifyResultCharacteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
 
-                                this.VerifyResultCharacteristic.ProtectionLevel = GattProtectionLevel.Plain;
+                                //this.VerifyResultCharacteristic.ProtectionLevel = GattProtectionLevel.Plain;
 
-                                await VerifyResultNotification(this.VerifyResultCharacteristic);
+                                await SetVerifyResultNotification(this.VerifyResultCharacteristic);
                             }
 
                             if(characteristic.Uuid.ToString().ToLower() == this.bioCredentialUUID.ToString().ToLower())
                             {
                                 Console.WriteLine("Found CredentialContent Characteristic!!");
                                 this.CredentialContentCharacteristic = characteristic;
+                                ShowCharacteristicProperty(characteristic);
                             }
                             Console.WriteLine();
                         }
@@ -301,18 +308,44 @@ namespace EnterpriseAuth.Managers
             }
         }
 
-        private async Task VerifyResultNotification(GattCharacteristic characteristic)
+        private async Task TurnOnBiometricsVerify()
         {
+            Console.WriteLine("Turn ON BioSwitchFlag Characteristic");
+            if(this.BioSwitchCharacteristic != null)
+            {
+                var writeBuffer = CryptographicBuffer.ConvertStringToBinary("ON", BinaryStringEncoding.Utf8);
+                var writeSuccessful = await WriteValueToCharacteristic(this.BioSwitchCharacteristic, writeBuffer);
+                if (writeSuccessful)
+                {
+                    Console.WriteLine("Turn ON Biometrics Successful, wait for verify result");
+                    //Trigger Event Handler (Delegate) to Inform RegisterViewModel
+                    BLEMessageEventArgs arg = new BLEMessageEventArgs();
+                    arg.bleMessage = "Waiting for Biometrics Verify";
+                    this.BLEMessageEvent(this, arg);
+                }
+            }
+            else
+            {
+                Console.WriteLine("BioSwitchCharacteristic is null");
+            }
+        }
 
-            var cccdValue = GattClientCharacteristicConfigurationDescriptorValue.Notify;
+        private async Task SetVerifyResultNotification(GattCharacteristic characteristic)
+        {
+            Console.WriteLine("Subscribe Notification for BioVerifyResult Characteristic");
+            ShowCharacteristicProperty(characteristic);
+            //characteristic.ValueChanged += VerifyCharacteristic_ValueChanged;
+
+            //var cccdValue = GattClientCharacteristicConfigurationDescriptorValue.Notify;
+            var cccdValue = GattClientCharacteristicConfigurationDescriptorValue.Indicate;
             GattCommunicationStatus status = GattCommunicationStatus.Unreachable;
             try
             {
                 status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(cccdValue);
                 if (status == GattCommunicationStatus.Success)
                 {
-                    characteristic.ValueChanged += Characteristic_ValueChanged;
-                    Console.WriteLine("Successfully subscribed for value changes");
+                    characteristic.ValueChanged += VerifyCharacteristic_ValueChanged;
+                    Console.WriteLine("Successfully subscribed for Biometrics Verify Result value changes");
                 }
                 else
                 {
@@ -327,21 +360,23 @@ namespace EnterpriseAuth.Managers
             
         }
 
-        private async void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        private async void VerifyCharacteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             byte[] data;
             CryptographicBuffer.CopyToByteArray(args.CharacteristicValue, out data);
-            Console.WriteLine($"Received Changed Value: {Encoding.UTF8.GetString(data)}");
+            Console.WriteLine($"Received Biometrics Verify Result Value: {Encoding.UTF8.GetString(data)}");
 
             if(Encoding.UTF8.GetString(data) == "OK")
             {
                 Console.WriteLine("Start to read credential");
+
                 BLEMessageEventArgs arg = new BLEMessageEventArgs();
                 arg.bleMessage = "Biometrics Verify OK";
                 this.BLEMessageEvent(this, arg);
 
                 arg.bleMessage = "OK";
                 this.BiometricsVerifyEvent(this, arg);
+
                 Thread.Sleep(2000);
                 GattReadResult result = await this.CredentialContentCharacteristic.ReadValueAsync(BluetoothCacheMode.Uncached);
                 if (result.Status == GattCommunicationStatus.Success)
@@ -374,6 +409,37 @@ namespace EnterpriseAuth.Managers
 
         }
 
+        public void ShowCharacteristicProperty(GattCharacteristic characteristic)
+        {
+            GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
+
+            if(properties.HasFlag(GattCharacteristicProperties.Read))
+            {
+                Console.WriteLine("This characteristic has property: Read");
+            }
+
+            if(properties.HasFlag(GattCharacteristicProperties.Write))
+            {
+                Console.WriteLine("This characteristic has property: Write");
+            }
+
+            if (properties.HasFlag(GattCharacteristicProperties.Notify))
+            {
+                Console.WriteLine("This characteristic has property: Notify");
+            }
+
+            if (properties.HasFlag(GattCharacteristicProperties.Indicate))
+            {
+                Console.WriteLine("This characteristic has property: Indicate");
+            }
+        }
+
+        public void DisposeWatcher()
+        {
+            this._watcher.Received -= OnAdvertisementReceived;
+            this._watcher = null;
+        }
+
         public void DisconnectDevice()
         {
             if (this.BioDevice != null)
@@ -383,7 +449,11 @@ namespace EnterpriseAuth.Managers
                 this._watcher.Received -= OnAdvertisementReceived;
                 this._watcher = null;
 
-                this.VerifyResultCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+               if(this.VerifyResultCharacteristic != null)
+                {
+                    this.VerifyResultCharacteristic.ValueChanged -= VerifyCharacteristic_ValueChanged;
+                }
+
                 this.VerifyResultCharacteristic = null;
                 this.BioSwitchCharacteristic = null;
                 this.CredentialContentCharacteristic = null;

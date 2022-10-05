@@ -20,6 +20,7 @@ using WebSocket4Net;
 using EnterpriseAuth.Managers;
 using EnterpriseAuth.Security;
 using System.Net.NetworkInformation;
+using System.Diagnostics;
 
 namespace EnterpriseAuth.ViewModels
 {
@@ -38,7 +39,7 @@ namespace EnterpriseAuth.ViewModels
         private string serialNumber = "";
         private string credentialSign = "";
         private string hashPassword = "";
-
+        private bool deviceConnectedFlag = false;
         public string ProfileName
         {
             get { return serverProfile.strProfileName; }
@@ -93,6 +94,8 @@ namespace EnterpriseAuth.ViewModels
 
         public async void StartAuthentication()
         {
+            Console.WriteLine("Start Authentication Process......");
+
             this.DisplayConnectingStatus();
 
             AACONREQ AuthConnectRequest = new AACONREQ();
@@ -414,8 +417,22 @@ namespace EnterpriseAuth.ViewModels
 
         public void ConnectRemoteServer()
         {
-            this.btManager.DisconnectDevice();
+            //this.btManager.DisconnectDevice();
+            //WritePasswordInfo(this.serverProfile.strUserName, this.hashPassword);
+            // string exeString = "\"C:\\Program Files\\OpenVPN\\bin\\openvpn.exe\" --config +\"C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn\"";
+            //string passString = @"""C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn""";
+            WritePasswordInfo("james", "james");
+            System.Diagnostics.Process.Start("CMD.exe", "/K C:\\StartOpenVpnConnect.bat");
 
+            /*
+            string fullPath = @"C:\\Program Files\\OpenVPN\\bin\\openvpn.exe";
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.WindowStyle = ProcessWindowStyle.Normal;
+            psi.FileName = "CMD.exe"; //Path.GetFileName(fullPath);
+            psi.WorkingDirectory = Path.GetDirectoryName(fullPath);
+            psi.Arguments = fullPath + " --config C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn";
+            Process.Start(psi);
+            */
         }
 
         private bool Handle_AACONPLY(string DataContent, out AACONPLY vconply, out string ReturnMsg)
@@ -671,9 +688,14 @@ namespace EnterpriseAuth.ViewModels
         {
             this.DisplayBlueToothStatus();
             this.btManager.ScanAndConnect();
-            this.btManager.BLEMessageEvent += BLEMessage_Received;
-            this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
-            this.btManager.CredentialContentEvent += CredentialContent_Received;
+
+            if (!this.deviceConnectedFlag)
+            {
+                this.btManager.BLEMessageEvent += BLEMessage_Received;
+                this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
+                this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.deviceConnectedFlag = true;
+            }
         }
 
         public void DisplayConnectingStatus()
@@ -707,9 +729,9 @@ namespace EnterpriseAuth.ViewModels
             BLEMessageEventArgs pe = e as BLEMessageEventArgs;
             Console.WriteLine("Biometrics Verify " + pe.bleMessage);
 
-            //Application.Current.Dispatcher.Invoke(() => {
-            //    this.MessageInfo = "Biometrics Verify " + pe.bleMessage;
-            //}, DispatcherPriority.Background);
+            Application.Current.Dispatcher.Invoke(() => {
+                this.MessageInfo = "Biometrics Verify " + pe.bleMessage;
+            }, DispatcherPriority.Background);
         }
 
         private void CredentialContent_Received(object sender, EventArgs e)
@@ -726,8 +748,6 @@ namespace EnterpriseAuth.ViewModels
             this.HashPasswordRequest();
         }
 
-
-
         private string GetMacAddress()
         {
             string FirstEthernetMacAddress = string.Empty;
@@ -739,5 +759,32 @@ namespace EnterpriseAuth.ViewModels
 
             return FirstEthernetMacAddress;
         }
-     }
+
+        public void TestBLE()
+        {
+            Console.WriteLine("Start to Test BLE...");
+
+            this.DisplayBlueToothStatus();
+            
+            this.btManager.ScanAndConnect();
+            if(!this.deviceConnectedFlag)
+            {
+                this.btManager.BLEMessageEvent += BLEMessage_Received;
+                this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
+                this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.deviceConnectedFlag = true;
+            }
+        }
+
+        public static void WritePasswordInfo(string user_name, string password)
+        {
+            using (StreamWriter sw = new StreamWriter("pwdinfo.txt"))
+            {
+                // Add some text to the file.
+                sw.WriteLine(user_name);
+                sw.WriteLine(password);
+            }
+        }
+
+    }
 }

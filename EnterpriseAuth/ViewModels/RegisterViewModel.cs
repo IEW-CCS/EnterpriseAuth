@@ -298,13 +298,18 @@ namespace EnterpriseAuth.ViewModels
                                 //MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientID = serverProfile.strUserName;
                                 //MainWindow.ObjectSecutiry.GetRSASecurity(serverProfile.strUserName, serverProfile.strProfileName).ClientPublicKey = serverProfile.strMyPublicKey;
                                 this.serverProfile.strProfileState = GlobalVaraible.PROFILE_STATE_REGISTER;
+                                Console.WriteLine("Register Complete");
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
                                     this.MessageInfo = "Register Complete";
                                     OnProfileUpdated();
                                 }, DispatcherPriority.Background);
 
-                                this.btManager.DisconnectDevice();
+                                this.btManager.BLEMessageEvent -= BLEMessage_Received;
+                                this.btManager.BiometricsVerifyEvent -= BiometricsVerify_Received;
+                                this.btManager.CredentialContentEvent -= CredentialContent_Received;
+
+                                //this.btManager.DisconnectDevice();
                             }
                         }
                         else

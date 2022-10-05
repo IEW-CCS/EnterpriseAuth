@@ -142,9 +142,11 @@ namespace EnterpriseAuth
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            
             if(_btm != null)
             {
-                _btm.DisconnectDevice();
+                //_btm.DisconnectDevice();
+                _btm.DisposeWatcher();
                 _btm = null;
                 GC.Collect();
             }
