@@ -76,13 +76,11 @@
     <Compile Include="Transactions\ARREGCMP.cs" />
     <Compile Include="Transactions\ARREGPLY.cs" />
     <Compile Include="Transactions\ARREGREQ.cs" />
-    <Compile Include="Transactions\APVRYCMP.cs" />
     <Compile Include="Transactions\AAUTHPLY.cs" />
     <Compile Include="Transactions\AAUTHREQ.cs" />
     <Compile Include="Transactions\ARREGFIN.cs" />
     <Compile Include="Transactions\ARWSCANN.cs" />
     <Compile Include="Transactions\CRCRLPLY.cs" />
-    <Compile Include="Transactions\CRCRLREQ.cs" />
     <Compile Include="Transactions\ClientVerifyReply.cs" />
     <Compile Include="Transactions\ClientVerifyRequest.cs" />
     <Compile Include="Transactions\CREDINFO.cs" />

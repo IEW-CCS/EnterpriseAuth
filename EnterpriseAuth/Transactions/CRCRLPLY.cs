@@ -8,15 +8,11 @@ namespace EnterpriseAuth.Transactions
 {
     class CRCRLPLY
     {
-        public string ServerName { get; set; }
-        public string Credential { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public string CredentialSign { get; set; }
 
         public CRCRLPLY()
         {
-            ServerName = string.Empty;
-            Credential = string.Empty;
-            TimeStamp = DateTime.Now;
+            CredentialSign = "";
         }
     }
 }

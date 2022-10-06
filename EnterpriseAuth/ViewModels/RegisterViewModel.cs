@@ -40,7 +40,7 @@ namespace EnterpriseAuth.ViewModels
         private string credentialContent = "";
         //BlueToothManager btManager = new BlueToothManager();
         BlueToothManager btManager;
-
+        private int eventCount = 0;
         /*
         public ServerProfile ProfileObject
         {
@@ -308,6 +308,8 @@ namespace EnterpriseAuth.ViewModels
                                 this.btManager.BLEMessageEvent -= BLEMessage_Received;
                                 this.btManager.BiometricsVerifyEvent -= BiometricsVerify_Received;
                                 this.btManager.CredentialContentEvent -= CredentialContent_Received;
+                                this.eventCount --;
+                                Console.WriteLine("this.btManager.CredentialContentEvent Count: {0}", this.eventCount);
 
                                 //this.btManager.DisconnectDevice();
                             }
@@ -457,6 +459,9 @@ namespace EnterpriseAuth.ViewModels
                         this.btManager.BLEMessageEvent += BLEMessage_Received;
                         this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
                         this.btManager.CredentialContentEvent += CredentialContent_Received;
+                        this.eventCount++;
+                        Console.WriteLine("this.btManager.CredentialContentEvent: {0}", this.eventCount);
+
                     }
                     else
                     {
@@ -591,8 +596,8 @@ namespace EnterpriseAuth.ViewModels
         private bool Handle_APREGPLY(string DataContent, out ARREGPLY apregply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
-            HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
-            if (httptrx == null)
+            //HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out HttpTrx httptrx))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize Http Trx Error";
@@ -623,8 +628,8 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(APREGPLY_DecryptContent);
-                        if (HESC == null)
+                        //ECS HESC = DeserializeObj._ECS(APREGPLY_DecryptContent);
+                        if (!DeserializeObj.TryParseJson(APREGPLY_DecryptContent, out ECS HESC))
                         {
                             ReturnStatus = false;
                             ReturnMsg = "Deserialize ECS Object Error";
@@ -644,8 +649,8 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                apregply = DeserializeObj._APREGPLY(DecrypStr);
-                                if (apregply == null)
+                                //apregply = DeserializeObj._APREGPLY(DecrypStr);
+                                if (!DeserializeObj.TryParseJson(DecrypStr, out apregply))
                                 {
                                     ReturnStatus = false;
                                     ReturnMsg = "Deserialize APREGPLY  Object Error";
@@ -671,8 +676,8 @@ namespace EnterpriseAuth.ViewModels
         {
 
             bool ReturnStatus = false;
-            arwscann = DeserializeObj._ARWSCANN(DataContent);
-            if (arwscann == null)
+           // arwscann = DeserializeObj._ARWSCANN(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out arwscann))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize ARWSCANN Object Error";
@@ -691,8 +696,8 @@ namespace EnterpriseAuth.ViewModels
         private bool Handle_ARREGFIN(string DataContent, out ARREGFIN aregfin, out string ReturnMsg)
         {
             bool ReturnStatus = true;
-            HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
-            if (httptrx == null)
+            //HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out HttpTrx httptrx))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize Http Trx Error";
@@ -723,8 +728,8 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(AREGFIN_DecryptContent);
-                        if (HESC == null)
+                        //ECS HESC = DeserializeObj._ECS(AREGFIN_DecryptContent);
+                        if (!DeserializeObj.TryParseJson(AREGFIN_DecryptContent, out ECS HESC))
                         {
                             ReturnStatus = false;
                             ReturnMsg = "Deserialize ECS Object Error";
@@ -744,8 +749,8 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                aregfin = DeserializeObj._AREGFIN(DecrypStr);
-                                if (aregfin == null)
+                                //aregfin = DeserializeObj._AREGFIN(DecrypStr);
+                                if (!DeserializeObj.TryParseJson(DecrypStr, out aregfin))
                                 {
                                     ReturnStatus = false;
                                     ReturnMsg = "Deserialize APREGPLY  Object Error";

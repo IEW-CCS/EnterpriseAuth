@@ -33,6 +33,9 @@ namespace EnterpriseAuth.ViewModels
         private BitmapImage stateImage = new BitmapImage();
         //BlueToothManager btManager = new BlueToothManager();
         BlueToothManager btManager;
+        private int eventCount = 0;
+        private bool HashPasswordReq = false;
+
 
         private string userPassword = "";
         private string passCode = "";
@@ -95,6 +98,7 @@ namespace EnterpriseAuth.ViewModels
         public async void StartAuthentication()
         {
             Console.WriteLine("Start Authentication Process......");
+            HashPasswordReq = true;
 
             this.DisplayConnectingStatus();
 
@@ -392,6 +396,7 @@ namespace EnterpriseAuth.ViewModels
                                 {
                                     this.MessageInfo = "Hash PWD:  " + this.hashPassword;
                                 }, DispatcherPriority.Background);
+
                                 //Connect to VPN or Citrix
                                 ConnectRemoteServer();
                             }
@@ -418,10 +423,10 @@ namespace EnterpriseAuth.ViewModels
         public void ConnectRemoteServer()
         {
             //this.btManager.DisconnectDevice();
-            //WritePasswordInfo(this.serverProfile.strUserName, this.hashPassword);
             // string exeString = "\"C:\\Program Files\\OpenVPN\\bin\\openvpn.exe\" --config +\"C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn\"";
             //string passString = @"""C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn""";
-            WritePasswordInfo("james", "james");
+            //WritePasswordInfo("james", "james");
+            WritePasswordInfo(this.serverProfile.strUserName, this.hashPassword);
             System.Diagnostics.Process.Start("CMD.exe", "/K C:\\StartOpenVpnConnect.bat");
 
             /*
@@ -438,8 +443,8 @@ namespace EnterpriseAuth.ViewModels
         private bool Handle_AACONPLY(string DataContent, out AACONPLY vconply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
-            HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
-            if (httptrx == null)
+            //HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out HttpTrx httptrx))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize Http Trx Error";
@@ -470,8 +475,8 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(DecryptECS);
-                        if (HESC == null)
+                        //ECS HESC = DeserializeObj._ECS(DecryptECS);
+                        if (!DeserializeObj.TryParseJson(DecryptECS, out ECS HESC))
                         {
                             ReturnStatus = false;
                             ReturnMsg = "Deserialize ECS Object Error";
@@ -491,8 +496,9 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                vconply = DeserializeObj._AACONPLY(DecrypStr);
-                                if (vconply == null)
+                                //vconply = DeserializeObj._AACONPLY(DecrypStr);
+
+                                if (!DeserializeObj.TryParseJson(DecrypStr, out vconply))
                                 {
                                     ReturnStatus = false;
                                     ReturnMsg = "Deserialize APREGPLY  Object Error";
@@ -516,8 +522,8 @@ namespace EnterpriseAuth.ViewModels
         private bool Handle_AAUTHPLY(string DataContent, out AAUTHPLY apvryply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
-            HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
-            if (httptrx == null)
+            //HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out HttpTrx httptrx))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize Http Trx Error";
@@ -548,8 +554,8 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(APVRYPLY_DecryptContent);
-                        if (HESC == null)
+                        //ECS HESC = DeserializeObj._ECS(APVRYPLY_DecryptContent);
+                        if (!DeserializeObj.TryParseJson(APVRYPLY_DecryptContent, out ECS HESC))
                         {
                             ReturnStatus = false;
                             ReturnMsg = "Deserialize ECS Object Error";
@@ -569,8 +575,8 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                apvryply = DeserializeObj._APVRYPLY(DecrypStr);
-                                if (apvryply == null)
+                                //apvryply = DeserializeObj._APVRYPLY(DecrypStr);
+                                if (!DeserializeObj.TryParseJson(DecrypStr, out apvryply))
                                 {
                                     ReturnStatus = false;
                                     ReturnMsg = "Deserialize APREGPLY  Object Error";
@@ -594,8 +600,8 @@ namespace EnterpriseAuth.ViewModels
         private bool Handle_AAPSWPLY(string DataContent, out AAPSWPLY ahpwply, out string ReturnMsg)
         {
             bool ReturnStatus = true;
-            HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
-            if (httptrx == null)
+            //HttpTrx httptrx = DeserializeObj._HttpTrx(DataContent);
+            if (!DeserializeObj.TryParseJson(DataContent, out HttpTrx httptrx))
             {
                 ReturnStatus = false;
                 ReturnMsg = "Deserialize Http Trx Error";
@@ -626,8 +632,8 @@ namespace EnterpriseAuth.ViewModels
                     }
                     else
                     {
-                        ECS HESC = DeserializeObj._ECS(AHPWPLY_DecryptContent);
-                        if (HESC == null)
+                        //ECS HESC = DeserializeObj._ECS(AHPWPLY_DecryptContent);
+                        if (!DeserializeObj.TryParseJson(AHPWPLY_DecryptContent, out ECS HESC))
                         {
                             ReturnStatus = false;
                             ReturnMsg = "Deserialize ECS Object Error";
@@ -647,8 +653,8 @@ namespace EnterpriseAuth.ViewModels
                             }
                             else
                             {
-                                ahpwply = DeserializeObj._AAPSWPLY(DecrypStr);
-                                if (ahpwply == null)
+                                //ahpwply = DeserializeObj._AAPSWPLY(DecrypStr);
+                                if (!DeserializeObj.TryParseJson(DecrypStr, out ahpwply))
                                 {
                                     ReturnStatus = false;
                                     ReturnMsg = "Deserialize APREGPLY  Object Error";
@@ -694,6 +700,10 @@ namespace EnterpriseAuth.ViewModels
                 this.btManager.BLEMessageEvent += BLEMessage_Received;
                 this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
                 this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.eventCount++;
+                Console.WriteLine("this.btManager.CredentialContentEvent Count: {0}", this.eventCount);
+
+
                 this.deviceConnectedFlag = true;
             }
         }
@@ -745,7 +755,11 @@ namespace EnterpriseAuth.ViewModels
                 this.MessageInfo = "Receive and Compare Credential Content OK";
             }, DispatcherPriority.Background);
 
-            this.HashPasswordRequest();
+        //    if (HashPasswordReq == true)
+         //   {
+                HashPasswordReq = false;
+                this.HashPasswordRequest();
+     //       }
         }
 
         private string GetMacAddress()
@@ -772,6 +786,9 @@ namespace EnterpriseAuth.ViewModels
                 this.btManager.BLEMessageEvent += BLEMessage_Received;
                 this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
                 this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.eventCount++;
+                Console.WriteLine("this.btManager.CredentialContentEvent Count: {0}", this.eventCount);
+
                 this.deviceConnectedFlag = true;
             }
         }

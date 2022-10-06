@@ -10,6 +10,22 @@ namespace EnterpriseAuth.Transactions
 {
     class DeserializeObj
     {
+
+        //--------  TryPaser Json File Call 法 --------
+        //  if (TryParseJson(DecryptVryopeData, out clsVryope tmpVryopeData)) 
+        public static bool TryParseJson<T>(string data, out T result)
+        {
+            bool success = true;
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                Error = (sender, args) => { success = false; args.ErrorContext.Handled = true; },
+                MissingMemberHandling = Newtonsoft.Json.MissingMemberHandling.Error
+            };
+            result = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(data, settings);
+            return success;
+        }
+
+        /*
         public static HttpTrx _HttpTrx(string DataContent)
         {
             HttpTrx obj = null;
@@ -247,5 +263,6 @@ namespace EnterpriseAuth.Transactions
             }
             return obj;
         }
+        */
     }
 }

@@ -71,7 +71,8 @@ namespace EnterpriseAuth.Managers
             Console.WriteLine("Watcher Status after Start operation: " + this._watcher.Status.ToString());
         }
 
-        private async void Device_ConnectionStatusChanged(BluetoothLEDevice device, object args)
+        //private async void Device_ConnectionStatusChanged(BluetoothLEDevice device, object args)
+        private  void Device_ConnectionStatusChanged(BluetoothLEDevice device, object args)
         {
             if (device == null)
             {
@@ -80,6 +81,7 @@ namespace EnterpriseAuth.Managers
             }
 
             Console.WriteLine("Device_ConnectionStatusChanged -> BluetoothConnectionStatus:  {0}", device.ConnectionStatus);
+            this.connectionStatus = device.ConnectionStatus;
 
             if (device.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
@@ -235,7 +237,6 @@ namespace EnterpriseAuth.Managers
                                 //var clientResult = await this.VerifyResultCharacteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
 
                                 //this.VerifyResultCharacteristic.ProtectionLevel = GattProtectionLevel.Plain;
-
                                 await SetVerifyResultNotification(this.VerifyResultCharacteristic);
                             }
 
