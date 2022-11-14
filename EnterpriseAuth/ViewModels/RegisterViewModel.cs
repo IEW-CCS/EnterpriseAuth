@@ -362,11 +362,11 @@ namespace EnterpriseAuth.ViewModels
             //this.webSocket4Net = new WebSocket("ws://localhost:23538/CLIENT_VERIFY");
             this.webSocket4Net = new WebSocket("ws://" + serverProfile.strServerURL + ":" + serverProfile.strServerPort + "/CLIENT_VERIFY");
 
-            this.webSocket4Net.Error += WebSocket4Net_Error;
+            this.webSocket4Net.Error += this.WebSocket4Net_Error;
 
-            this.webSocket4Net.Opened += WebSocket4Net_Opened;
-            this.webSocket4Net.Closed += WebSocket4Net_Closed;
-            this.webSocket4Net.MessageReceived += WebSocketNotifyMessage;
+            this.webSocket4Net.Opened += this.WebSocket4Net_Opened;
+            this.webSocket4Net.Closed += this.WebSocket4Net_Closed;
+            this.webSocket4Net.MessageReceived += this.WebSocketNotifyMessage;
             this.webSocket4Net.Open();
         }
 
@@ -456,9 +456,9 @@ namespace EnterpriseAuth.ViewModels
                     {
                         this.DisplayBlueToothStatus();
                         this.btManager.ScanAndConnect();
-                        this.btManager.BLEMessageEvent += BLEMessage_Received;
-                        this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
-                        this.btManager.CredentialContentEvent += CredentialContent_Received;
+                        this.btManager.BLEMessageEvent += this.BLEMessage_Received;
+                        this.btManager.BiometricsVerifyEvent += this.BiometricsVerify_Received;
+                        this.btManager.CredentialContentEvent += this.CredentialContent_Received;
                         this.eventCount++;
                         Console.WriteLine("this.btManager.CredentialContentEvent: {0}", this.eventCount);
 

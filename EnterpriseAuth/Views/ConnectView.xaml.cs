@@ -43,8 +43,9 @@ namespace EnterpriseAuth.Views
             string passwd = this.pwdBox.Password;
             this.connectViewModel.UserPassword = passwd;
             this.connectViewModel.StartAuthentication();
-            //this.connectViewModel.TestBLE();
-            //this.connectViewModel.TestCmd();
+
+            //Test
+            //this.connectViewModel.ShareDesktop();
         }
 
     }

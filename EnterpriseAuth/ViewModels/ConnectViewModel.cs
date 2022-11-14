@@ -69,23 +69,23 @@ namespace EnterpriseAuth.ViewModels
             //get { return serverProfile.strPassword; }
             set { this.userPassword = value; }
         }
-        public string MessageInfo
+        public string ConnectMessageInfo
         {
             get { return this.messageInfo; }
             set
             {
                 this.messageInfo = value;
-                OnPropertyChanged("MessageInfo");
+                OnPropertyChanged("ConnectMessageInfo");
             }
         }
 
-        public BitmapImage StateImage
+        public BitmapImage ConnectStateImage
         {
             get { return this.stateImage; }
             set
             {
                 this.stateImage = value;
-                OnPropertyChanged("StateImage");
+                OnPropertyChanged("ConnectStateImage");
             }
         }
 
@@ -172,7 +172,7 @@ namespace EnterpriseAuth.ViewModels
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Handle AACONPLY  Error: " + returnMsg;
+                                    this.ConnectMessageInfo = "Handle AACONPLY  Error: " + returnMsg;
                                 }, DispatcherPriority.Background);
                             }
                             else
@@ -186,7 +186,7 @@ namespace EnterpriseAuth.ViewModels
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                                this.ConnectMessageInfo = "HTTP Response Error: " + response.StatusCode;
                             }, DispatcherPriority.Background);
                         }
                     }
@@ -194,7 +194,7 @@ namespace EnterpriseAuth.ViewModels
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
+                            this.ConnectMessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
                 }
@@ -276,7 +276,7 @@ namespace EnterpriseAuth.ViewModels
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Handle APVRYPLY  Error: " + returnMsg;
+                                    this.ConnectMessageInfo = "Handle APVRYPLY  Error: " + returnMsg;
                                 }, DispatcherPriority.Background);
                             }
                             else
@@ -292,7 +292,7 @@ namespace EnterpriseAuth.ViewModels
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                                this.ConnectMessageInfo = "HTTP Response Error: " + response.StatusCode;
                             }, DispatcherPriority.Background);
                         }
                     }
@@ -300,7 +300,7 @@ namespace EnterpriseAuth.ViewModels
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
+                            this.ConnectMessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
 
@@ -385,7 +385,7 @@ namespace EnterpriseAuth.ViewModels
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Handle AAPSWREQ  Error: " + returnMsg;
+                                    this.ConnectMessageInfo = "Handle AAPSWREQ  Error: " + returnMsg;
                                 }, DispatcherPriority.Background);
                             }
                             else
@@ -394,18 +394,21 @@ namespace EnterpriseAuth.ViewModels
                                 this.hashPassword = ahpwply.PasswordData;
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    this.MessageInfo = "Hash PWD:  " + this.hashPassword;
+                                    this.ConnectMessageInfo = "Hash PWD:  " + this.hashPassword;
                                 }, DispatcherPriority.Background);
 
                                 //Connect to VPN or Citrix
                                 ConnectRemoteServer();
+
+                                //Share Desktop Screen to Remore
+                                ShareDesktop();
                             }
                         }
                         else
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                this.MessageInfo = "HTTP Response Error: " + response.StatusCode;
+                                this.ConnectMessageInfo = "HTTP Response Error: " + response.StatusCode;
                             }, DispatcherPriority.Background);
                         }
                     }
@@ -413,7 +416,7 @@ namespace EnterpriseAuth.ViewModels
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            this.MessageInfo = "HTTP Post Exception: " + ex.Message;
+                            this.ConnectMessageInfo = "HTTP Post Exception: " + ex.Message;
                         }, DispatcherPriority.Background);
                     }
                 }
@@ -438,6 +441,11 @@ namespace EnterpriseAuth.ViewModels
             psi.Arguments = fullPath + " --config C:\\Program Files\\OpenVPN\\bin\\config-pass.ovpn";
             Process.Start(psi);
             */
+        }
+        
+        public void ShareDesktop()
+        {
+            System.Diagnostics.Process.Start("CMD.exe", "/C C:\\StartChrome.bat");
         }
 
         private bool Handle_AACONPLY(string DataContent, out AACONPLY vconply, out string ReturnMsg)
@@ -697,9 +705,9 @@ namespace EnterpriseAuth.ViewModels
 
             if (!this.deviceConnectedFlag)
             {
-                this.btManager.BLEMessageEvent += BLEMessage_Received;
-                this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
-                this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.btManager.BLEMessageEvent += this.BLEMessage_Received;
+                this.btManager.BiometricsVerifyEvent += this.BiometricsVerify_Received;
+                this.btManager.CredentialContentEvent += this.CredentialContent_Received;
                 this.eventCount++;
                 Console.WriteLine("this.btManager.CredentialContentEvent Count: {0}", this.eventCount);
 
@@ -711,16 +719,16 @@ namespace EnterpriseAuth.ViewModels
         public void DisplayConnectingStatus()
         {
             Application.Current.Dispatcher.Invoke(() => {
-                this.StateImage = new BitmapImage(new Uri("/images/connect.jpeg", UriKind.Relative));
-                this.MessageInfo = "Connecting to Server...";
+                this.ConnectStateImage = new BitmapImage(new Uri("/images/connect.jpeg", UriKind.Relative));
+                this.ConnectMessageInfo = "Connecting to Server...";
             }, DispatcherPriority.Background);
         }
 
         public void DisplayBlueToothStatus()
         {
             Application.Current.Dispatcher.Invoke(() => {
-                this.StateImage = new BitmapImage(new Uri("/images/bluetooth.jpeg", UriKind.Relative));
-                this.MessageInfo = "Connecting to BlueTooth Device...";
+                this.ConnectStateImage = new BitmapImage(new Uri("/images/bluetooth.jpeg", UriKind.Relative));
+                this.ConnectMessageInfo = "Connecting to BlueTooth Device...";
             }, DispatcherPriority.Background);
         }
 
@@ -730,7 +738,7 @@ namespace EnterpriseAuth.ViewModels
             Console.WriteLine("BLEMessage_Received: " + pe.bleMessage);
 
             Application.Current.Dispatcher.Invoke(() => {
-                this.MessageInfo = pe.bleMessage;
+                this.ConnectMessageInfo = pe.bleMessage;
             }, DispatcherPriority.Background);
         }
 
@@ -740,7 +748,7 @@ namespace EnterpriseAuth.ViewModels
             Console.WriteLine("Biometrics Verify " + pe.bleMessage);
 
             Application.Current.Dispatcher.Invoke(() => {
-                this.MessageInfo = "Biometrics Verify " + pe.bleMessage;
+                this.ConnectMessageInfo = "Biometrics Verify " + pe.bleMessage;
             }, DispatcherPriority.Background);
         }
 
@@ -752,7 +760,7 @@ namespace EnterpriseAuth.ViewModels
             this.credentialSign = pe.bleMessage;
 
             Application.Current.Dispatcher.Invoke(() => {
-                this.MessageInfo = "Receive and Compare Credential Content OK";
+                this.ConnectMessageInfo = "Receive and Compare Credential Content OK";
             }, DispatcherPriority.Background);
 
         //    if (HashPasswordReq == true)
@@ -783,9 +791,9 @@ namespace EnterpriseAuth.ViewModels
             this.btManager.ScanAndConnect();
             if(!this.deviceConnectedFlag)
             {
-                this.btManager.BLEMessageEvent += BLEMessage_Received;
-                this.btManager.BiometricsVerifyEvent += BiometricsVerify_Received;
-                this.btManager.CredentialContentEvent += CredentialContent_Received;
+                this.btManager.BLEMessageEvent += this.BLEMessage_Received;
+                this.btManager.BiometricsVerifyEvent += this.BiometricsVerify_Received;
+                this.btManager.CredentialContentEvent += this.CredentialContent_Received;
                 this.eventCount++;
                 Console.WriteLine("this.btManager.CredentialContentEvent Count: {0}", this.eventCount);
 
